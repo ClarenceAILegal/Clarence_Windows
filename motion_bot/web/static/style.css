@@ -171,78 +171,56 @@ body.app-page::after {
   overflow: visible;
 }
 
-/* Teddy silhouette — head + small top ears + muzzle */
-.bear-watermark-svg ellipse,
-.bear-watermark-svg circle {
-  fill: none;
+/* Match menu icon styling, scaled via SVG viewBox */
+.bear-watermark-svg .bear-wm-ear,
+.bear-watermark-svg .bear-wm-head {
+  fill: #f3d4b0;
   stroke: #1c1012;
-  stroke-width: 3;
+  stroke-width: 1.35;
   stroke-linejoin: round;
 }
-
-.bear-watermark-svg .bear-wm-soft {
-  fill: none;
-  stroke: #1c1012;
-  stroke-width: 2;
-  opacity: 0.55;
+.bear-watermark-svg .bear-wm-ear-inner {
+  fill: #e8a090;
+  stroke: none;
 }
-
-.bear-watermark-svg .bear-wm-muzzle {
-  fill: none;
+.bear-watermark-svg .bear-wm-snout {
+  fill: #f7e2c9;
   stroke: #1c1012;
-  stroke-width: 2.8;
+  stroke-width: 1.1;
 }
-
 .bear-watermark-svg .bear-wm-nose {
   fill: #1c1012;
   stroke: none;
 }
-
-.bear-watermark-svg .bear-wm-line {
-  fill: none;
-  stroke: #1c1012;
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.bear-watermark-svg .bear-wm-soft-stroke {
-  stroke-width: 2.2;
-  opacity: 0.45;
-}
-
 .bear-watermark-svg .bear-wm-brow {
   fill: none;
   stroke: #1c1012;
-  stroke-width: 5;
+  stroke-width: 1.55;
+  stroke-linecap: round;
+}
+.bear-watermark-svg .bear-wm-mouth {
+  fill: none;
+  stroke: #1c1012;
+  stroke-width: 1.35;
   stroke-linecap: round;
 }
 
-/* Red robot optics — brighter than watermark so anger reads */
+/* Red robot eyes (only difference from the menu icon) */
 .bear-watermark-svg .bear-wm-eye-ring {
-  fill: #140606;
-  stroke: #9a2222;
-  stroke-width: 2.4;
+  fill: #1a0606;
+  stroke: #8b1e1e;
+  stroke-width: 0.35;
 }
-
 .bear-watermark-svg .bear-wm-eye-lens {
-  fill: #c62828;
-  stroke: #ff4d4d;
-  stroke-width: 1.5;
-  filter: drop-shadow(0 0 6px rgba(230, 50, 50, 0.9));
+  fill: #e23434;
+  stroke: #ff5c5c;
+  stroke-width: 0.25;
+  filter: drop-shadow(0 0 0.35px rgba(255, 50, 50, 0.95));
 }
-
-.bear-watermark-svg .bear-wm-eye-core {
-  fill: #ff2a2a;
-  stroke: none;
-  filter: drop-shadow(0 0 5px rgba(255, 60, 60, 1));
-}
-
 .bear-watermark-svg .bear-wm-eye-slit {
-  stroke: #1a0505;
-  stroke-width: 2.6;
+  stroke: #2a0505;
+  stroke-width: 0.45;
   stroke-linecap: round;
-  opacity: 0.9;
 }
 
 #future-ripples {

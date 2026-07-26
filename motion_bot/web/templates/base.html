@@ -15,44 +15,32 @@
   {% endif %}
   <canvas id="graphene-lattice" aria-hidden="true"></canvas>
 
-  <!-- Giant watermark: teddy-bear face + angry red robot eyes (left lattice fade) -->
+  <!-- Same face as the menu icon, scaled up; red robot eyes only change -->
   <div class="bear-watermark" aria-hidden="true">
-    <svg class="bear-watermark-svg" viewBox="0 0 240 260" xmlns="http://www.w3.org/2000/svg">
-      <!-- Small rounded ears on TOP of the head (not Mickey side-disks) -->
-      <ellipse cx="62" cy="58" rx="32" ry="34" />
-      <ellipse cx="178" cy="58" rx="32" ry="34" />
-      <ellipse class="bear-wm-soft" cx="62" cy="62" rx="16" ry="17" />
-      <ellipse class="bear-wm-soft" cx="178" cy="62" rx="16" ry="17" />
-
-      <!-- Broad teddy head (slightly wider than tall) -->
-      <ellipse cx="120" cy="145" rx="92" ry="88" />
-
-      <!-- Cheek fluff hints -->
-      <path class="bear-wm-line bear-wm-soft-stroke" d="M38 150 Q28 168 42 182" />
-      <path class="bear-wm-line bear-wm-soft-stroke" d="M202 150 Q212 168 198 182" />
-
-      <!-- Heavy angry brows over the optics -->
-      <path class="bear-wm-brow" d="M52 112 L108 128" />
-      <path class="bear-wm-brow" d="M188 112 L132 128" />
-
-      <!-- Angry red robot eyes: circular lenses + glowing iris + slit pupil -->
-      <circle class="bear-wm-eye-ring" cx="88" cy="148" r="22" />
-      <circle class="bear-wm-eye-ring" cx="152" cy="148" r="22" />
-      <circle class="bear-wm-eye-lens" cx="88" cy="148" r="16" />
-      <circle class="bear-wm-eye-lens" cx="152" cy="148" r="16" />
-      <circle class="bear-wm-eye-core" cx="88" cy="148" r="8" />
-      <circle class="bear-wm-eye-core" cx="152" cy="148" r="8" />
-      <line class="bear-wm-eye-slit" x1="78" y1="148" x2="98" y2="148" />
-      <line class="bear-wm-eye-slit" x1="142" y1="148" x2="162" y2="148" />
-
-      <!-- Classic teddy muzzle -->
-      <ellipse class="bear-wm-muzzle" cx="120" cy="188" rx="38" ry="30" />
-      <!-- triangle-ish nose -->
-      <path class="bear-wm-nose" d="M120 172 L132 186 L108 186 Z" />
-      <!-- vertical philtrum -->
-      <path class="bear-wm-line" d="M120 186 L120 198" />
-      <!-- frown / inverted smile stitch -->
-      <path class="bear-wm-line" d="M102 204 Q120 194 138 204" />
+    <svg class="bear-watermark-svg" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <!-- ears -->
+      <circle class="bear-wm-ear" cx="7.5" cy="8.5" r="4.2" />
+      <circle class="bear-wm-ear" cx="24.5" cy="8.5" r="4.2" />
+      <circle class="bear-wm-ear-inner" cx="7.5" cy="8.5" r="2.1" />
+      <circle class="bear-wm-ear-inner" cx="24.5" cy="8.5" r="2.1" />
+      <!-- head -->
+      <circle class="bear-wm-head" cx="16" cy="17" r="10.5" />
+      <!-- angry brows -->
+      <path class="bear-wm-brow" d="M9.2 13.2 L14.2 15.1" />
+      <path class="bear-wm-brow" d="M22.8 13.2 L17.8 15.1" />
+      <!-- angry red robot eyes (same positions as icon dots) -->
+      <circle class="bear-wm-eye-ring" cx="12.2" cy="16.8" r="2.15" />
+      <circle class="bear-wm-eye-ring" cx="19.8" cy="16.8" r="2.15" />
+      <circle class="bear-wm-eye-lens" cx="12.2" cy="16.8" r="1.45" />
+      <circle class="bear-wm-eye-lens" cx="19.8" cy="16.8" r="1.45" />
+      <line class="bear-wm-eye-slit" x1="11.1" y1="16.8" x2="13.3" y2="16.8" />
+      <line class="bear-wm-eye-slit" x1="18.7" y1="16.8" x2="20.9" y2="16.8" />
+      <!-- snout -->
+      <ellipse class="bear-wm-snout" cx="16" cy="21.2" rx="4.2" ry="3.1" />
+      <!-- nose -->
+      <ellipse class="bear-wm-nose" cx="16" cy="20.3" rx="1.5" ry="1.15" />
+      <!-- frown -->
+      <path class="bear-wm-mouth" d="M13.4 23.1 Q16 21.6 18.6 23.1" />
     </svg>
   </div>
 
