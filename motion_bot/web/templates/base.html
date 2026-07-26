@@ -41,8 +41,34 @@
   <script src="/static/ripples.js"></script>
   <script>
     (function () {
+      // Future-page ripples only run after successful login (this shell is auth-gated).
       const canvas = document.getElementById("future-ripples");
       if (!canvas || !window.MotionBotRipples) return;
+
+      {% if play_intro %}
+      // Continue the post-password transition; no ambient motion until intro finishes.
+      const engine = window.MotionBotRipples.create(canvas, {
+        ambient: false,
+        interactive: false,
+        waveColor: [0, 150, 200],
+        clearAlpha: 0.06,
+      });
+      setTimeout(function () {
+        engine.splash(window.innerWidth * 0.5, window.innerHeight * 0.42, 1.0);
+      }, 200);
+      setTimeout(function () {
+        const veil = document.getElementById("intro-veil");
+        if (veil) veil.remove();
+        // Soft ambient water only after the login unlock sequence
+        const ambient = window.MotionBotRipples.create(canvas, {
+          ambient: true,
+          interactive: true,
+          waveColor: [0, 150, 200],
+          clearAlpha: 0.06,
+        });
+        ambient.start();
+      }, 1700);
+      {% else %}
       const engine = window.MotionBotRipples.create(canvas, {
         ambient: true,
         interactive: true,
@@ -50,15 +76,6 @@
         clearAlpha: 0.06,
       });
       engine.start();
-      // soft opening ripple after login transition
-      {% if play_intro %}
-      setTimeout(function () {
-        engine.splash(window.innerWidth * 0.5, window.innerHeight * 0.42, 1.0);
-      }, 200);
-      setTimeout(function () {
-        const veil = document.getElementById("intro-veil");
-        if (veil) veil.remove();
-      }, 1700);
       {% endif %}
     })();
   </script>

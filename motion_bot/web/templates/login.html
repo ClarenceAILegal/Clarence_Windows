@@ -7,7 +7,8 @@
   <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body class="login-page" id="login-body">
-  <canvas id="ripple-canvas"></canvas>
+  <!-- Canvas stays hidden and empty until the password is verified -->
+  <canvas id="ripple-canvas" class="ripple-canvas-idle" aria-hidden="true"></canvas>
 
   <form class="login-center" id="login-form" method="post" action="/login" autocomplete="off">
     <label for="password">Password:</label>
@@ -28,7 +29,6 @@
   <div class="login-error" id="login-error" hidden></div>
   {% endif %}
 
-  <script src="/static/ripples.js"></script>
   <script>
     (function () {
       const form = document.getElementById("login-form");
@@ -36,19 +36,58 @@
       const err = document.getElementById("login-error");
       const body = document.getElementById("login-body");
       const canvas = document.getElementById("ripple-canvas");
-      const engine = window.MotionBotRipples.create(canvas, {
-        waveColor: [200, 230, 255],
-        ambient: false,
-      });
+      let unlocking = false;
+
+      function showError(msg) {
+        err.hidden = false;
+        err.textContent = msg;
+        input.select();
+      }
+
+      function loadRippleScript() {
+        return new Promise(function (resolve, reject) {
+          if (window.MotionBotRipples) {
+            resolve();
+            return;
+          }
+          const s = document.createElement("script");
+          s.src = "/static/ripples.js";
+          s.onload = function () { resolve(); };
+          s.onerror = function () { reject(new Error("ripple script failed")); };
+          document.head.appendChild(s);
+        });
+      }
+
+      async function playSuccessRipples() {
+        await loadRippleScript();
+        canvas.classList.remove("ripple-canvas-idle");
+        canvas.classList.add("active");
+        const engine = window.MotionBotRipples.create(canvas, {
+          waveColor: [200, 230, 255],
+          ambient: false,
+          interactive: false,
+        });
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        // Only after correct password: stone-in-water rings
+        engine.splash(cx, cy, 1.25);
+        setTimeout(function () { engine.splash(cx - 40, cy + 20, 0.7); }, 180);
+        setTimeout(function () { engine.splash(cx + 55, cy - 10, 0.55); }, 360);
+        body.classList.add("login-fade-out");
+        setTimeout(function () {
+          window.location.href = "/home?awakened=1";
+        }, 1450);
+      }
 
       form.addEventListener("submit", async function (e) {
         e.preventDefault();
+        if (unlocking) return;
+
         err.hidden = true;
         err.textContent = "";
 
-        const password = input.value;
         const bodyData = new URLSearchParams();
-        bodyData.set("password", password);
+        bodyData.set("password", input.value);
 
         let res;
         try {
@@ -62,8 +101,7 @@
             credentials: "same-origin",
           });
         } catch (ex) {
-          err.hidden = false;
-          err.textContent = "Unable to reach server.";
+          showError("Unable to reach server.");
           return;
         }
 
@@ -73,23 +111,18 @@
             const data = await res.json();
             if (data && data.error) msg = data.error;
           } catch (_) {}
-          err.hidden = false;
-          err.textContent = msg;
-          input.select();
+          showError(msg);
           return;
         }
 
-        // Stone-in-water: concentric ripples, then morph into the future UI
-        canvas.classList.add("active");
-        const cx = window.innerWidth / 2;
-        const cy = window.innerHeight / 2;
-        engine.splash(cx, cy, 1.25);
-        setTimeout(function () { engine.splash(cx - 40, cy + 20, 0.7); }, 180);
-        setTimeout(function () { engine.splash(cx + 55, cy - 10, 0.55); }, 360);
-        body.classList.add("login-fade-out");
-        setTimeout(function () {
+        // Correct password only from here
+        unlocking = true;
+        input.disabled = true;
+        try {
+          await playSuccessRipples();
+        } catch (_) {
           window.location.href = "/home?awakened=1";
-        }, 1450);
+        }
       });
     })();
   </script>

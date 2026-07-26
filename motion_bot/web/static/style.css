@@ -86,7 +86,7 @@ body.login-page {
   z-index: 2;
 }
 
-/* Water ripples over the blue field after correct password */
+/* Water ripples — completely inert until correct password (class "active") */
 #ripple-canvas {
   position: fixed;
   inset: 0;
@@ -95,9 +95,17 @@ body.login-page {
   z-index: 5;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.2s linear;
+  visibility: hidden;
+  display: none;
+}
+#ripple-canvas.ripple-canvas-idle {
+  display: none;
+  visibility: hidden;
+  opacity: 0;
 }
 #ripple-canvas.active {
+  display: block;
+  visibility: visible;
   opacity: 1;
 }
 
