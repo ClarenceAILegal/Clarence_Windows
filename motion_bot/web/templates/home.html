@@ -3,34 +3,31 @@
 {% block content %}
   <section class="hero">
     <div class="search-stack">
-      <form class="search-form" method="get" action="/home" role="search">
-        <label class="hero-sub" for="motion-query">What motion do you need?</label>
-        <input
-          id="motion-query"
-          class="search-input"
-          type="search"
-          name="q"
-          value="{{ query }}"
-          placeholder="e.g. motion to suppress eyewitness identification for suggestive photo lineup"
-          autofocus
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <button class="search-submit" type="submit">Search</button>
-      </form>
-
-      <div
-        class="drop-zone"
-        id="drop-zone"
+      <form
+        class="search-form"
+        id="search-form"
+        method="get"
+        action="/home"
+        role="search"
         data-query="{{ query }}"
-        aria-label="Drop a Word template here to add it to your library"
       >
-        <div class="drop-zone-inner">
-          <p class="drop-zone-title">Drop a .docx template here</p>
-          <p class="drop-zone-sub">It’s added to your library automatically</p>
-          <p class="drop-zone-status" id="drop-status" hidden></p>
+        <label class="hero-sub" for="motion-query">What motion do you need?</label>
+        <div class="search-field" id="search-field">
+          <input
+            id="motion-query"
+            class="search-input"
+            type="search"
+            name="q"
+            value="{{ query }}"
+            placeholder="Search motions — or drop a .docx template here"
+            autofocus
+            autocomplete="off"
+            spellcheck="false"
+          />
         </div>
-      </div>
+        <button class="search-submit" type="submit">Search</button>
+        <p class="search-status" id="search-status" hidden></p>
+      </form>
 
       {% if query %}
       <div class="results" id="results">
@@ -53,14 +50,14 @@
           </article>
           {% endfor %}
           <p class="results-footer muted">
-            Not what you need? Drop a .docx on the zone above — it joins the library automatically.
+            Not what you need? Drop a .docx on the search bar to add it to your library.
           </p>
         {% else %}
           <div class="result-card result-card-prompt">
             <div>
               <h3>No match in your library</h3>
               <p>
-                Nothing for “{{ query }}”. Drop a Word template (.docx) on the zone above
+                Nothing for “{{ query }}”. Drop a Word template (.docx) on the search bar
                 and Clarence will add it to your library automatically.
               </p>
             </div>
@@ -77,10 +74,12 @@
 {% block scripts %}
 <script>
 (function () {
-  const zone = document.getElementById("drop-zone");
-  const statusEl = document.getElementById("drop-status");
+  const form = document.getElementById("search-form");
+  const field = document.getElementById("search-field");
+  const input = document.getElementById("motion-query");
+  const statusEl = document.getElementById("search-status");
   const results = document.getElementById("results");
-  if (!zone) return;
+  if (!form || !field || !input) return;
 
   let dragDepth = 0;
 
@@ -88,11 +87,12 @@
     if (!statusEl) return;
     statusEl.hidden = !msg;
     statusEl.textContent = msg || "";
-    statusEl.className = "drop-zone-status" + (kind ? " is-" + kind : "");
+    statusEl.className = "search-status" + (kind ? " is-" + kind : "");
   }
 
   function highlight(on) {
-    zone.classList.toggle("is-dragover", !!on);
+    form.classList.toggle("is-dragover", !!on);
+    field.classList.toggle("is-dragover", !!on);
   }
 
   async function uploadFile(file) {
@@ -104,11 +104,11 @@
     }
 
     setStatus("Adding to library…", "pending");
-    zone.classList.add("is-uploading");
+    form.classList.add("is-uploading");
 
     const body = new FormData();
     body.append("file", file, file.name);
-    const q = zone.getAttribute("data-query") || "";
+    const q = (form.getAttribute("data-query") || input.value || "").trim();
     if (q) {
       body.append("suggested_query", q);
       body.append("description", q);
@@ -132,14 +132,13 @@
     } catch (err) {
       setStatus("Upload failed. Check your connection and try again.", "error");
     } finally {
-      zone.classList.remove("is-uploading");
+      form.classList.remove("is-uploading");
     }
   }
 
   function prependResult(data) {
     if (!results) return;
     results.hidden = false;
-    // Remove empty-state prompt if present
     const prompt = results.querySelector(".result-card-prompt");
     if (prompt) prompt.remove();
 
@@ -159,18 +158,13 @@
     card.querySelector("p").textContent =
       data.description || "Just added to your library.";
     const meta = card.querySelector(".result-meta");
-    if (data.jurisdiction) {
+    ["jurisdiction", "motion_type"].forEach(function (key) {
+      if (!data[key]) return;
       const b = document.createElement("span");
       b.className = "badge";
-      b.textContent = data.jurisdiction;
+      b.textContent = data[key];
       meta.appendChild(b);
-    }
-    if (data.motion_type) {
-      const b = document.createElement("span");
-      b.className = "badge";
-      b.textContent = data.motion_type;
-      meta.appendChild(b);
-    }
+    });
     const src = document.createElement("span");
     src.className = "badge";
     src.textContent = data.source || "library";
@@ -183,29 +177,28 @@
     results.insertBefore(card, results.firstChild);
   }
 
-  // Prevent browser from opening the file when dropped outside intentional targets
   ["dragenter", "dragover", "dragleave", "drop"].forEach(function (evt) {
     document.addEventListener(evt, function (e) {
       e.preventDefault();
     });
   });
 
-  zone.addEventListener("dragenter", function (e) {
+  function onDragEnter(e) {
     e.preventDefault();
     dragDepth += 1;
     highlight(true);
-  });
-  zone.addEventListener("dragleave", function (e) {
+  }
+  function onDragLeave(e) {
     e.preventDefault();
     dragDepth = Math.max(0, dragDepth - 1);
     if (dragDepth === 0) highlight(false);
-  });
-  zone.addEventListener("dragover", function (e) {
+  }
+  function onDragOver(e) {
     e.preventDefault();
     if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
     highlight(true);
-  });
-  zone.addEventListener("drop", function (e) {
+  }
+  function onDrop(e) {
     e.preventDefault();
     dragDepth = 0;
     highlight(false);
@@ -214,7 +207,6 @@
       setStatus("No file detected.", "error");
       return;
     }
-    // Upload first .docx found (or first file and let API reject)
     let file = null;
     for (let i = 0; i < files.length; i++) {
       if ((files[i].name || "").toLowerCase().endsWith(".docx")) {
@@ -223,6 +215,14 @@
       }
     }
     uploadFile(file || files[0]);
+  }
+
+  // Whole search control is the drop target (field + input + button row)
+  [form, field, input].forEach(function (el) {
+    el.addEventListener("dragenter", onDragEnter);
+    el.addEventListener("dragleave", onDragLeave);
+    el.addEventListener("dragover", onDragOver);
+    el.addEventListener("drop", onDrop);
   });
 })();
 </script>
