@@ -36,8 +36,9 @@
     }
 
     function waveOffset(x, y, time) {
-      const phase = x * 0.013 + y * 0.01 + time * 1.05;
-      const phase2 = x * -0.008 + y * 0.015 + time * 0.68;
+      // Slightly faster undulation
+      const phase = x * 0.013 + y * 0.01 + time * 1.45;
+      const phase2 = x * -0.008 + y * 0.015 + time * 0.95;
       const amp = 6.2;
       return {
         dx: Math.sin(phase) * amp * 0.5 + Math.cos(phase2) * amp * 0.22,
@@ -96,7 +97,8 @@
       const originY = -span * 0.2;
 
       // Hairline stroke
-      ctx.lineWidth = Math.max(0.4, 0.45 / dpr);
+      // Slightly thicker hairlines (still fine graphene strokes)
+      ctx.lineWidth = Math.max(0.7, 0.85 / dpr);
       ctx.lineJoin = "round";
       ctx.lineCap = "round";
 
