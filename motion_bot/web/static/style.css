@@ -338,7 +338,7 @@ body.app-page::after {
   color: var(--future-accent-2);
 }
 
-/* Hero search */
+/* Hero search — one shared column so label + bar share the same edges */
 .hero {
   flex: 1;
   display: flex;
@@ -346,19 +346,25 @@ body.app-page::after {
   align-items: center;
   justify-content: center;
   padding: 2rem 1.25rem 4rem;
-  text-align: center;
+}
+
+.search-stack {
+  width: min(720px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .hero-sub {
   color: var(--future-muted);
-  margin: 0 0 1.5rem;
-  max-width: 36rem;
+  margin: 0 0 0.85rem;
+  max-width: none;
+  width: 100%;
   font-size: 1rem;
-}
-
-.search-panel {
-  width: min(720px, 100%);
-  position: relative;
+  line-height: 1.45;
+  text-align: left;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 .search-form {
@@ -409,7 +415,7 @@ body.app-page::after {
 }
 
 .results {
-  width: min(720px, 100%);
+  width: 100%;
   margin-top: 1.75rem;
   text-align: left;
 }
