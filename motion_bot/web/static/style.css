@@ -338,7 +338,9 @@ body.app-page::after {
   color: var(--future-accent-2);
 }
 
-/* Hero search — one shared column so label + bar share the same edges */
+/* Hero search
+   Description + input share column 1 (identical left/right edges).
+   Search button lives in column 2 only. */
 .hero {
   flex: 1;
   display: flex;
@@ -349,39 +351,64 @@ body.app-page::after {
 }
 
 .search-stack {
-  width: min(720px, 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.hero-sub {
-  color: var(--future-muted);
-  margin: 0 0 0.85rem;
-  max-width: none;
-  width: 100%;
-  font-size: 1rem;
-  line-height: 1.45;
-  text-align: left;
-  padding: 0;
+  --search-width: min(720px, 100%);
+  --search-gap: 0.65rem;
+  --search-pad-x: 1.25rem;
+  width: var(--search-width);
+  max-width: 100%;
   box-sizing: border-box;
 }
 
 .search-form {
-  display: flex;
-  gap: 0.65rem;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "sub   ."
+    "input btn";
+  column-gap: var(--search-gap);
+  row-gap: 0.7rem;
   width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  align-items: stretch;
+  box-sizing: border-box;
 }
 
-.search-form input[type="search"],
-.search-form input[type="text"] {
-  flex: 1;
+/* Same grid cell width as the input — not under the button */
+.search-form .hero-sub {
+  grid-area: sub;
+  display: block;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  /* Match input text inset (border 1px + horizontal padding) */
+  padding: 0 calc(var(--search-pad-x) + 1px);
+  box-sizing: border-box;
+  color: var(--future-muted);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: left;
+  letter-spacing: normal;
+}
+
+.search-form .search-input {
+  grid-area: input;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  box-sizing: border-box;
+  /* Kill Safari search-field chrome that shifts content */
+  -webkit-appearance: none;
+  appearance: none;
   border: 1px solid rgba(166, 61, 61, 0.25);
   border-radius: 999px;
-  padding: 1rem 1.35rem;
-  font-size: 1.05rem;
-  background: rgba(255, 255, 255, 0.86);
+  padding: 1rem var(--search-pad-x);
+  font-size: 1rem;
+  line-height: 1.45;
+  font-family: inherit;
+  background: rgba(255, 255, 255, 0.92);
   box-shadow:
     0 10px 40px rgba(166, 61, 61, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -389,17 +416,30 @@ body.app-page::after {
   outline: none;
   backdrop-filter: blur(6px);
 }
-.search-form input:focus {
+
+.search-form .search-input::-webkit-search-decoration,
+.search-form .search-input::-webkit-search-cancel-button,
+.search-form .search-input::-webkit-search-results-button,
+.search-form .search-input::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+.search-form .search-input:focus {
   border-color: var(--future-accent);
   box-shadow:
     0 0 0 4px rgba(201, 76, 76, 0.15),
     0 12px 40px rgba(166, 61, 61, 0.16);
 }
 
-.search-form button {
+.search-form .search-submit {
+  grid-area: btn;
+  align-self: stretch;
+  margin: 0;
   border: 0;
   border-radius: 999px;
-  padding: 0 1.4rem;
+  padding: 0 1.35rem;
   font-family: var(--font-future);
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -409,8 +449,10 @@ body.app-page::after {
   background: linear-gradient(135deg, #a63d3d, #c94c4c);
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(166, 61, 61, 0.28);
+  white-space: nowrap;
+  box-sizing: border-box;
 }
-.search-form button:hover {
+.search-form .search-submit:hover {
   filter: brightness(1.06);
 }
 
@@ -418,6 +460,7 @@ body.app-page::after {
   width: 100%;
   margin-top: 1.75rem;
   text-align: left;
+  box-sizing: border-box;
 }
 
 .result-card {

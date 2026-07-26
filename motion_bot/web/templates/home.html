@@ -3,18 +3,22 @@
 {% block content %}
   <section class="hero">
     <div class="search-stack">
-      <p class="hero-sub">Describe the motion you need. Clarence searches your private template library.</p>
-
       <form class="search-form" method="get" action="/home" role="search">
+        <label class="hero-sub" for="motion-query">
+          Describe the motion you need. Clarence searches your private template library.
+        </label>
         <input
+          id="motion-query"
+          class="search-input"
           type="search"
           name="q"
           value="{{ query }}"
           placeholder="e.g. motion to suppress eyewitness identification for suggestive photo lineup"
           autofocus
-          aria-label="Search motions"
+          autocomplete="off"
+          spellcheck="false"
         />
-        <button type="submit">Search</button>
+        <button class="search-submit" type="submit">Search</button>
       </form>
 
       {% if query %}
