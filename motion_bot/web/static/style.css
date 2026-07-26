@@ -386,11 +386,12 @@ body.app-page::after {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
-    "sub    sub"
-    "field  btn"
-    "status status";
+    "sub     sub"
+    "field   actions"
+    "hint    hint"
+    "status  status";
   column-gap: var(--search-gap);
-  row-gap: 0.65rem;
+  row-gap: 0.55rem;
   width: 100%;
   margin: 0;
   padding: 0;
@@ -485,27 +486,67 @@ body.app-page::after {
   pointer-events: none;
 }
 
-.search-form .search-submit {
-  grid-area: btn;
+.search-actions {
+  grid-area: actions;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
   align-self: stretch;
+}
+
+.search-form .search-submit {
   margin: 0;
   border: 0;
   border-radius: 999px;
-  padding: 0 1.35rem;
+  padding: 0.75rem 1.2rem;
   font-family: var(--font-future);
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   color: #fff;
   background: linear-gradient(135deg, #a63d3d, #c94c4c);
   cursor: pointer;
   box-shadow: 0 8px 24px rgba(166, 61, 61, 0.28);
   white-space: nowrap;
   box-sizing: border-box;
+  flex: 1;
+}
+.search-form .search-submit-generate {
+  background: linear-gradient(135deg, #6b1f1f, #a63d3d);
 }
 .search-form .search-submit:hover {
   filter: brightness(1.06);
+}
+
+.search-hint {
+  grid-area: hint;
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.35;
+  text-align: left;
+}
+
+.extracted-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-top: 0.85rem;
+  width: 100%;
+}
+.extracted-label {
+  font-size: 0.82rem;
+  color: var(--future-muted);
+  margin-right: 0.25rem;
+}
+
+.inline-form {
+  display: inline;
+  margin: 0;
+}
+.inline-form .btn {
+  font: inherit;
 }
 
 .search-status {

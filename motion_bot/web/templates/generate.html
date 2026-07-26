@@ -4,7 +4,11 @@
 <div class="wrap">
   <div class="card">
     <h1>Generate motion</h1>
-    <p class="muted">Fill case fields and download a Word (.docx) motion.</p>
+    <p class="muted">
+      Fill case fields and download a Word (.docx) motion.
+      Prefer the search bar for one-shot generation — this form is for full control.
+      {% if seed_query %}<br />Prefilled from: <em>{{ seed_query }}</em>{% endif %}
+    </p>
   </div>
 
   <div class="card">

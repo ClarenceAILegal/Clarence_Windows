@@ -25,9 +25,11 @@ from motion_bot.catalog import (
     list_templates,
     refresh_placeholders,
 )
+from motion_bot.compose import compose_motion_request, form_defaults_for_template
 from motion_bot.generator import generate_motion
 from motion_bot.models import motion_from_dict
 from motion_bot.paths import OUTPUT_DIR, ensure_runtime_dirs
+from motion_bot.query_parse import parse_user_query
 from motion_bot.web.auth import (
     consume_intro_flag,
     get_session_secret,
@@ -137,13 +139,78 @@ async def logout(request: Request):
 
 
 @app.get("/home", response_class=HTMLResponse)
-async def home(request: Request, q: str = "", awakened: Optional[str] = None):
+async def home(
+    request: Request,
+    q: str = "",
+    mode: str = "search",
+    template_id: str = "",
+    awakened: Optional[str] = None,
+):
     if not _authed(request):
         return _redirect_login()
     # Play water-ripple intro once after successful login
     play_intro = consume_intro_flag(request)
     query = (q or "").strip()
-    results = search_templates(query) if query else []
+    mode = (mode or "search").strip().lower()
+    if mode not in ("search", "generate"):
+        mode = "search"
+    forced_tid = (template_id or "").strip()
+
+    parsed = parse_user_query(query, force_intent=mode if query else None) if query else None
+    search_q = parsed.search_text if parsed else ""
+    results = search_templates(search_q) if search_q else []
+
+    # One-shot / generate path: fill from free text + chosen/best template, download
+    if query and mode == "generate":
+        best_entry = None
+        if forced_tid:
+            try:
+                best_entry = get_template(forced_tid)
+            except (KeyError, FileNotFoundError):
+                best_entry = None
+        if best_entry is None and results:
+            best_entry = results[0][0]
+        if best_entry is None:
+            return templates.TemplateResponse(
+                "home.html",
+                _base_ctx(
+                    request,
+                    query=query,
+                    results=[],
+                    play_intro=play_intro,
+                    mode="generate",
+                    generate_error=(
+                        "No matching template in your library for that request. "
+                        "Drop a .docx on the search bar to add one, then try Generate again."
+                    ),
+                    extracted={},
+                ),
+            )
+        try:
+            motion_req = compose_motion_request(best_entry, parsed)
+            out_path = generate_motion(motion_req)
+        except Exception as exc:  # noqa: BLE001
+            return templates.TemplateResponse(
+                "home.html",
+                _base_ctx(
+                    request,
+                    query=query,
+                    results=results,
+                    play_intro=play_intro,
+                    mode="generate",
+                    generate_error=f"Could not generate: {exc}",
+                    extracted=parsed.fields if parsed else {},
+                ),
+                status_code=400,
+            )
+        _flash(
+            request,
+            f"Generated from “{best_entry.name}” using details from your prompt.",
+            "success",
+        )
+        return RedirectResponse(url=f"/download/{out_path.name}", status_code=303)
+
+    extracted = parsed.fields if parsed else {}
     return templates.TemplateResponse(
         "home.html",
         _base_ctx(
@@ -151,6 +218,9 @@ async def home(request: Request, q: str = "", awakened: Optional[str] = None):
             query=query,
             results=results,
             play_intro=play_intro,
+            mode=mode,
+            generate_error=None,
+            extracted=extracted,
         ),
     )
 
@@ -188,12 +258,26 @@ async def template_detail(request: Request, template_id: str):
 
 
 @app.get("/generate", response_class=HTMLResponse)
-async def generate_page(request: Request, template_id: Optional[str] = None):
+async def generate_page(
+    request: Request,
+    template_id: Optional[str] = None,
+    q: str = "",
+):
     if not _authed(request):
         return _redirect_login()
     entries = list_templates()
     selected = None
     placeholders: List[str] = []
+    form_defaults: Dict[str, Any] = {}
+
+    # Prefill from session (set by "Edit form" actions) or free-text q=
+    session_prefill = request.session.pop("generate_prefill", None)
+    if isinstance(session_prefill, dict):
+        form_defaults.update(session_prefill)
+        if not template_id:
+            template_id = session_prefill.get("template_id") or template_id
+
+    query = (q or "").strip()
     if template_id:
         try:
             selected = get_template(template_id)
@@ -202,6 +286,31 @@ async def generate_page(request: Request, template_id: Optional[str] = None):
             ).placeholders
         except (KeyError, FileNotFoundError):
             selected = None
+
+    if query:
+        parsed = parse_user_query(query, force_intent="search")
+        if selected:
+            form_defaults = {
+                **form_defaults_for_template(selected, parsed),
+                **form_defaults,
+            }
+        else:
+            # Pick best template for the query if none selected
+            hits = search_templates(parsed.search_text)
+            if hits:
+                selected = hits[0][0]
+                template_id = selected.id
+                placeholders = list(selected.placeholders)
+                form_defaults = {
+                    **form_defaults_for_template(selected, parsed),
+                    **form_defaults,
+                }
+            else:
+                form_defaults = {**form_defaults, **parsed.fields}
+
+    if selected and not form_defaults.get("motion_title"):
+        form_defaults["motion_title"] = selected.name
+
     return templates.TemplateResponse(
         "generate.html",
         _base_ctx(
@@ -210,9 +319,43 @@ async def generate_page(request: Request, template_id: Optional[str] = None):
             selected=selected,
             placeholders=placeholders,
             today=date.today().isoformat(),
-            form_defaults={},
+            form_defaults=form_defaults,
             error=None,
+            seed_query=query,
         ),
+    )
+
+
+@app.post("/prepare-form")
+async def prepare_form(
+    request: Request,
+    q: str = Form(""),
+    template_id: str = Form(""),
+):
+    """Search-bar path: open generate form prefilled from free text + template."""
+    if not _authed(request):
+        return _redirect_login()
+    query = (q or "").strip()
+    tid = (template_id or "").strip()
+    parsed = parse_user_query(query, force_intent="search")
+    try:
+        entry = get_template(tid) if tid else None
+    except (KeyError, FileNotFoundError):
+        entry = None
+    if entry is None and query:
+        hits = search_templates(parsed.search_text)
+        entry = hits[0][0] if hits else None
+    if entry is None:
+        _flash(request, "Pick or upload a template first.", "error")
+        return RedirectResponse(
+            url=f"/home?q={quote(query)}" if query else "/home",
+            status_code=303,
+        )
+    prefill = form_defaults_for_template(entry, parsed)
+    request.session["generate_prefill"] = prefill
+    return RedirectResponse(
+        url=f"/generate?template_id={quote(entry.id)}",
+        status_code=303,
     )
 
 

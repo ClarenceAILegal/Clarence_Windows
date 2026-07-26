@@ -19,15 +19,42 @@
             type="search"
             name="q"
             value="{{ query }}"
-            placeholder="Search motions — or drop a .docx template here"
+            placeholder="Describe the motion — add case no., parties, facts… or drop a .docx"
             autofocus
             autocomplete="off"
             spellcheck="false"
           />
         </div>
-        <button class="search-submit" type="submit">Search</button>
+        <div class="search-actions">
+          <button class="search-submit" type="submit" name="mode" value="search">Search</button>
+          <button class="search-submit search-submit-generate" type="submit" name="mode" value="generate">Generate</button>
+        </div>
+        <p class="search-hint muted">
+          Search finds templates. Generate one-shots a motion from your text + best library match.
+          Or open the form to edit every field.
+        </p>
         <p class="search-status" id="search-status" hidden></p>
       </form>
+
+      {% if generate_error %}
+      <div class="result-card result-card-prompt">
+        <div>
+          <h3>Couldn’t generate yet</h3>
+          <p>{{ generate_error }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if query and extracted %}
+      <div class="extracted-strip">
+        <span class="extracted-label">From your prompt:</span>
+        {% for key, val in extracted.items() %}
+          {% if key not in ('factual_background', 'additional_grounds', 'legal_argument') and val %}
+          <span class="chip" title="{{ key }}">{{ key }}: {{ val[:48] }}{% if val|length > 48 %}…{% endif %}</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
 
       {% if query %}
       <div class="results" id="results">
@@ -44,13 +71,24 @@
               </div>
             </div>
             <div class="result-actions">
-              <a class="btn primary" href="/generate?template_id={{ entry.id }}">Use</a>
+              <a
+                class="btn primary"
+                href="/home?q={{ query|urlencode }}&mode=generate&template_id={{ entry.id }}"
+                title="Generate this template filled with your prompt details"
+              >Generate</a>
+              <form method="post" action="/prepare-form" class="inline-form">
+                <input type="hidden" name="q" value="{{ query }}" />
+                <input type="hidden" name="template_id" value="{{ entry.id }}" />
+                <button class="btn ghost" type="submit">Edit form</button>
+              </form>
               <a class="btn ghost" href="/templates/{{ entry.id }}">Details</a>
             </div>
           </article>
           {% endfor %}
           <p class="results-footer muted">
-            Not what you need? Drop a .docx on the search bar to add it to your library.
+            Prefer step-by-step?
+            <a href="/generate?q={{ query|urlencode }}{% if results %}&template_id={{ results[0][0].id }}{% endif %}">Open full form</a>
+            with your details prefilled. Or drop a .docx on the search bar to expand the library.
           </p>
         {% else %}
           <div class="result-card result-card-prompt">
@@ -58,7 +96,7 @@
               <h3>No match in your library</h3>
               <p>
                 Nothing for “{{ query }}”. Drop a Word template (.docx) on the search bar
-                and Clarence will add it to your library automatically.
+                to add it, then Search or Generate again.
               </p>
             </div>
           </div>
@@ -144,6 +182,7 @@
 
     const card = document.createElement("article");
     card.className = "result-card result-card-new";
+    const q = encodeURIComponent(input.value || "");
     card.innerHTML =
       "<div>" +
       "<h3></h3>" +
@@ -170,8 +209,8 @@
     src.textContent = data.source || "library";
     meta.appendChild(src);
     const links = card.querySelectorAll("a");
-    links[0].href = "/generate?template_id=" + encodeURIComponent(data.id);
-    links[0].textContent = "Use";
+    links[0].href = "/generate?template_id=" + encodeURIComponent(data.id) + (q ? "&q=" + q : "");
+    links[0].textContent = "Edit form";
     links[1].href = "/templates/" + encodeURIComponent(data.id);
     links[1].textContent = "Details";
     results.insertBefore(card, results.firstChild);
@@ -217,7 +256,6 @@
     uploadFile(file || files[0]);
   }
 
-  // Whole search control is the drop target (field + input + button row)
   [form, field, input].forEach(function (el) {
     el.addEventListener("dragenter", onDragEnter);
     el.addEventListener("dragleave", onDragLeave);
