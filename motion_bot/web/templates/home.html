@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Clarence{% endblock %}
 {% block content %}
-  <section class="hero hero-chat">
+  <section class="hero{% if show_chat and query %} has-chat{% endif %}">
     <div class="search-stack">
       {% if show_chat and query %}
       <div class="chat-thread" id="chat-thread" aria-live="polite">
@@ -27,27 +27,27 @@
             </svg>
           </div>
           <div class="chat-bubble chat-bubble-clarence">
-            <div class="chat-typing" id="chat-typing" aria-hidden="true">
+            <div class="chat-typing" id="chat-typing">
               <span></span><span></span><span></span>
             </div>
-            <div class="chat-reply" id="chat-reply" hidden>
+            <div class="chat-reply" id="chat-reply">
               {% if generate_error %}
                 <p>{{ generate_error }}</p>
               {% elif results %}
-                <p id="chat-type-target">
+                <p>
                   Got it. I found
                   {% if results|length == 1 %}
                     a matching motion in your library
                   {% else %}
                     {{ results|length }} possible matches in your library
                   {% endif %}
-                  {% if best_template_name %}(top match: {{ best_template_name }}){% endif %}.
+                  {% if best_template_name %} (top match: <strong>{{ best_template_name }}</strong>){% endif %}.
                   How would you like to proceed?
                 </p>
                 <div class="chat-choices">
                   <a
                     class="chat-choice chat-choice-primary"
-                    href="/home?q={{ query|urlencode }}&mode=generate{% if best_template_id %}&template_id={{ best_template_id }}{% endif %}"
+                    href="/home?q={{ query|urlencode }}&amp;mode=generate{% if best_template_id %}&amp;template_id={{ best_template_id|urlencode }}{% endif %}"
                   >Generate the motion for me</a>
                   <form method="post" action="/prepare-form" class="chat-choice-form">
                     <input type="hidden" name="q" value="{{ query }}" />
@@ -66,7 +66,7 @@
                 </div>
                 {% endif %}
               {% else %}
-                <p id="chat-type-target">
+                <p>
                   I don’t have a matching motion template for that yet.
                   Drop a .docx on the bar below to add it to your library, then send your request again.
                 </p>
@@ -85,7 +85,7 @@
         role="search"
         data-query="{{ query }}"
       >
-        <label class="hero-sub" for="motion-query">{% if show_chat %}Anything else?{% else %}What motion do you need?{% endif %}</label>
+        <label class="hero-sub" for="motion-query">{% if show_chat and query %}Anything else?{% else %}What motion do you need?{% endif %}</label>
         <div class="composer-row">
           <div class="search-field" id="search-field">
             <input
@@ -94,10 +94,11 @@
               type="search"
               name="q"
               value=""
-              placeholder="{% if show_chat %}Add more detail or ask for another motion…{% else %}Describe the motion — case no., parties, facts… or drop a .docx{% endif %}"
+              placeholder="{% if show_chat and query %}Add more detail or ask for another motion…{% else %}Describe the motion — case no., parties, facts… or drop a .docx{% endif %}"
               autofocus
               autocomplete="off"
               spellcheck="false"
+              required
             />
           </div>
           <button class="send-arrow" type="submit" aria-label="Send">
@@ -126,7 +127,7 @@
           <div class="result-actions">
             <a
               class="btn primary"
-              href="/home?q={{ query|urlencode }}&mode=generate&template_id={{ entry.id }}"
+              href="/home?q={{ query|urlencode }}&amp;mode=generate&amp;template_id={{ entry.id|urlencode }}"
             >Generate this</a>
             <form method="post" action="/prepare-form" class="inline-form">
               <input type="hidden" name="q" value="{{ query }}" />
@@ -147,26 +148,23 @@
 {% block scripts %}
 <script>
 (function () {
-  // Typewriter-style reveal for Clarence's reply
-  const typing = document.getElementById("chat-typing");
-  const reply = document.getElementById("chat-reply");
+  // Show Clarence reply after a short typing beat
+  var typing = document.getElementById("chat-typing");
+  var reply = document.getElementById("chat-reply");
   if (typing && reply) {
-    const delay = 700 + Math.min(1200, ({{ (query or '')|length }} * 8));
-    setTimeout(function () {
-      typing.hidden = true;
-      reply.hidden = false;
+    window.setTimeout(function () {
+      typing.style.display = "none";
       reply.classList.add("is-visible");
-    }, delay);
+    }, 900);
   }
 
-  const form = document.getElementById("search-form");
-  const field = document.getElementById("search-field");
-  const input = document.getElementById("motion-query");
-  const statusEl = document.getElementById("search-status");
-  const results = document.getElementById("results");
+  var form = document.getElementById("search-form");
+  var field = document.getElementById("search-field");
+  var input = document.getElementById("motion-query");
+  var statusEl = document.getElementById("search-status");
   if (!form || !field || !input) return;
 
-  let dragDepth = 0;
+  var dragDepth = 0;
 
   function setStatus(msg, kind) {
     if (!statusEl) return;
@@ -188,30 +186,27 @@
     }
     setStatus("Adding to library…", "pending");
     form.classList.add("is-uploading");
-    const body = new FormData();
+    var body = new FormData();
     body.append("file", file, file.name);
-    const q = (input.value || form.getAttribute("data-query") || "").trim();
+    var q = (input.value || form.getAttribute("data-query") || "").trim();
     if (q) {
       body.append("suggested_query", q);
       body.append("description", q);
       body.append("name", q);
     }
     try {
-      const res = await fetch("/api/upload", {
+      var res = await fetch("/api/upload", {
         method: "POST",
         body: body,
         credentials: "same-origin",
         headers: { Accept: "application/json" },
       });
-      const data = await res.json().catch(function () { return {}; });
+      var data = await res.json().catch(function () { return {}; });
       if (!res.ok || !data.ok) {
         setStatus((data && data.error) || "Upload failed.", "error");
         return;
       }
       setStatus(data.message || ("Added to library: " + data.name), "success");
-      if (results) {
-        results.hidden = false;
-      }
     } catch (err) {
       setStatus("Upload failed. Check your connection and try again.", "error");
     } finally {
@@ -242,13 +237,13 @@
     e.preventDefault();
     dragDepth = 0;
     highlight(false);
-    const files = e.dataTransfer && e.dataTransfer.files;
+    var files = e.dataTransfer && e.dataTransfer.files;
     if (!files || !files.length) {
       setStatus("No file detected.", "error");
       return;
     }
-    let file = null;
-    for (let i = 0; i < files.length; i++) {
+    var file = null;
+    for (var i = 0; i < files.length; i++) {
       if ((files[i].name || "").toLowerCase().endsWith(".docx")) {
         file = files[i];
         break;

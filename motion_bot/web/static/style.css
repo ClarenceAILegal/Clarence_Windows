@@ -361,16 +361,21 @@ body.app-page::after {
   color: var(--future-accent-2);
 }
 
-/* Hero search
-   Description + input share column 1 (identical left/right edges).
-   Search button lives in column 2 only. */
+/* Hero / composer — keep bar upper-center, not pinned to page bottom */
 .hero {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1.25rem 4rem;
+  padding: 2rem 1.25rem 3rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.hero.has-chat {
+  justify-content: flex-start;
+  padding-top: 1.75rem;
 }
 
 .search-stack {
@@ -526,18 +531,12 @@ body.app-page::after {
 }
 
 /* ---- Chat thread ---- */
-.hero-chat {
-  justify-content: flex-end;
-  padding-top: 1.25rem;
-  padding-bottom: 2rem;
-}
-
 .chat-thread {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.1rem;
   text-align: left;
 }
 
@@ -624,13 +623,15 @@ body.app-page::after {
 }
 
 .chat-reply {
-  opacity: 0;
-  transform: translateY(4px);
+  display: none;
 }
 .chat-reply.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.35s ease, transform 0.35s ease;
+  display: block;
+  animation: chatIn 0.35s ease forwards;
+}
+@keyframes chatIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .chat-choices {

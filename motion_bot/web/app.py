@@ -218,6 +218,7 @@ async def home(
         return RedirectResponse(url=f"/download/{out_path.name}", status_code=303)
 
     extracted = parsed.fields if parsed else {}
+    # Always pass chat-related keys so the template never hits undefined surprises
     return templates.TemplateResponse(
         "home.html",
         _base_ctx(
@@ -229,8 +230,8 @@ async def home(
             generate_error=None,
             extracted=extracted,
             show_chat=bool(query),
-            best_template_id=results[0][0].id if results else "",
-            best_template_name=results[0][0].name if results else "",
+            best_template_id=(results[0][0].id if results else ""),
+            best_template_name=(results[0][0].name if results else ""),
         ),
     )
 
