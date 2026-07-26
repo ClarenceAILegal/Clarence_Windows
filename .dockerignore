@@ -1,0 +1,13 @@
+.venv
+__pycache__
+*.pyc
+.git
+.mypy_cache
+.pytest_cache
+.ruff_cache
+motion_bot.egg-info
+output/*
+!output/.gitkeep
+.env
+*.docx
+!templates/**/*.docx

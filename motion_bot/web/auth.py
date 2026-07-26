@@ -30,7 +30,19 @@ def get_session_secret() -> str:
     if secret:
         return secret
     # Ephemeral secret: sessions reset on restart (fine for private local use)
+    # In production set MOTION_BOT_SECRET_KEY so logins survive restarts.
     return secrets.token_hex(32)
+
+
+def use_https_cookies() -> bool:
+    """Secure cookies when behind HTTPS / production reverse proxy."""
+    flag = os.environ.get("MOTION_BOT_HTTPS", "").strip().lower()
+    if flag in ("1", "true", "yes", "on"):
+        return True
+    # Common platform signals
+    if os.environ.get("RENDER") or os.environ.get("FLY_APP_NAME"):
+        return True
+    return False
 
 
 def verify_password(candidate: str) -> bool:

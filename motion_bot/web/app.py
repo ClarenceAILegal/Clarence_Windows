@@ -36,6 +36,7 @@ from motion_bot.web.auth import (
     is_authenticated,
     login_session,
     logout_session,
+    use_https_cookies,
     verify_password,
 )
 from motion_bot.web.search import search_templates
@@ -52,7 +53,7 @@ app.add_middleware(
     secret_key=get_session_secret(),
     session_cookie="motion_bot_session",
     same_site="lax",
-    https_only=False,
+    https_only=use_https_cookies(),
     max_age=60 * 60 * 12,
 )
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")

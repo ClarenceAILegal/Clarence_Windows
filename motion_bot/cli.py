@@ -164,30 +164,45 @@ def paths_cmd() -> None:
 
 
 @main.command("serve")
-@click.option("--host", default="127.0.0.1", show_default=True, help="Bind address.")
-@click.option("--port", default=8000, show_default=True, type=int, help="Port.")
+@click.option(
+    "--host",
+    default=None,
+    help="Bind address (default 127.0.0.1, or 0.0.0.0 if PORT is set).",
+)
+@click.option(
+    "--port",
+    default=None,
+    type=int,
+    help="Port (default 8000, or $PORT on hosting platforms).",
+)
 @click.option("--reload", is_flag=True, help="Auto-reload on code changes (dev only).")
-def serve_cmd(host: str, port: int, reload: bool) -> None:
+def serve_cmd(host: str | None, port: int | None, reload: bool) -> None:
     """Run the password-protected private web UI.
 
     Default password is B0ts4Justice (case-sensitive) unless MOTION_BOT_PASSWORD
     is set. Optional: MOTION_BOT_SECRET_KEY for stable sessions across restarts.
     """
+    import os
+
     import uvicorn
 
     from motion_bot.web.auth import DEFAULT_PASSWORD, get_site_password
 
+    env_port = os.environ.get("PORT")
+    bind_port = port if port is not None else int(env_port or "8000")
+    bind_host = host or ("0.0.0.0" if env_port else "127.0.0.1")
+
     active = get_site_password()
     using_default = active == DEFAULT_PASSWORD
-    click.echo(f"Clarence private site: http://{host}:{port}")
+    click.echo(f"Clarence private site: http://{bind_host}:{bind_port}")
     if using_default:
         click.echo("Site password: default (B0ts4Justice) — case-sensitive")
     else:
         click.echo("Site password: custom (MOTION_BOT_PASSWORD)")
     uvicorn.run(
         "motion_bot.web.app:app",
-        host=host,
-        port=port,
+        host=bind_host,
+        port=bind_port,
         reload=reload,
     )
 
