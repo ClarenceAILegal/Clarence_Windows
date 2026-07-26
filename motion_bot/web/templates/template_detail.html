@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.name }} · Motion Bot{% endblock %}
+{% block content %}
+  <div class="card">
+    <h1>{{ entry.name }}</h1>
+    <p class="muted">{{ entry.description or "No description." }}</p>
+    <p>
+      {% if entry.jurisdiction %}<span class="badge fl">{{ entry.jurisdiction }}</span>{% endif %}
+      {% if entry.motion_type %}<span class="badge">{{ entry.motion_type }}</span>{% endif %}
+      <span class="badge">{{ entry.source }}</span>
+    </p>
+    <div class="actions">
+      <a class="btn" href="/generate?template_id={{ entry.id }}">Generate with this template</a>
+      <a class="btn secondary" href="/dashboard">Back</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Placeholders</h2>
+    {% if entry.placeholders %}
+      <div class="chip-list">
+        {% for p in entry.placeholders %}
+          <span class="chip">{{ p }}</span>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="muted">No Jinja placeholders detected. Upload a fillable .docx with {{ '{{ field }}' }} tags.</p>
+    {% endif %}
+    {% if entry.notes %}
+      <p class="muted" style="margin-top:1rem;">{{ entry.notes }}</p>
+    {% endif %}
+  </div>
+{% endblock %}

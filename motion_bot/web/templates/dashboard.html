@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Templates · Motion Bot{% endblock %}
+{% block content %}
+  <div class="card">
+    <h1>Template library</h1>
+    <p class="muted">Lexis-sourced and sample motion templates available on this private site.</p>
+    <div class="actions">
+      <a class="btn" href="/generate">Generate motion</a>
+      <a class="btn secondary" href="/upload">Upload .docx template</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Templates</h2>
+    {% if not entries %}
+      <p class="muted">No templates yet. Upload a .docx to get started.</p>
+    {% else %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Jurisdiction</th>
+          <th>Type</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in entries %}
+        <tr>
+          <td>
+            <strong>{{ e.name }}</strong><br />
+            <span class="muted" style="font-size:0.85rem;">{{ e.id }}</span>
+            {% if e.description %}<div class="muted" style="margin-top:0.25rem;font-size:0.9rem;">{{ e.description }}</div>{% endif %}
+          </td>
+          <td>{% if e.jurisdiction %}<span class="badge fl">{{ e.jurisdiction }}</span>{% else %}—{% endif %}</td>
+          <td class="muted">{{ e.motion_type or "—" }}</td>
+          <td class="actions">
+            <a class="btn secondary" href="/templates/{{ e.id }}">Details</a>
+            <a class="btn" href="/generate?template_id={{ e.id }}">Use</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h2>Recent generated motions</h2>
+    {% if not outputs %}
+      <p class="muted">No generated files yet.</p>
+    {% else %}
+    <table class="table">
+      <thead>
+        <tr><th>File</th><th>Size</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for o in outputs %}
+        <tr>
+          <td>{{ o.name }}</td>
+          <td class="muted">{{ (o.size / 1024) | round(1) }} KB</td>
+          <td><a href="/download/{{ o.name }}">Download</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+{% endblock %}

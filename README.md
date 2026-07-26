@@ -21,7 +21,33 @@ pip install --upgrade pip setuptools wheel
 pip install -e .
 ```
 
-## Quick start
+## Private website (password-protected)
+
+Motion Bot includes a private web UI. **Every feature requires a site password.**
+
+```bash
+export MOTION_BOT_PASSWORD='your-strong-password'
+# optional, keeps logins valid across restarts:
+# export MOTION_BOT_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
+
+motion-bot serve
+# open http://127.0.0.1:8000
+```
+
+| Page | Purpose |
+|------|---------|
+| `/login` | Password gate |
+| `/dashboard` | Browse templates + recent downloads |
+| `/generate` | Fill fields and generate a motion `.docx` |
+| `/upload` | Import a Lexis `.docx` template |
+| `/download/...` | Download generated Word files (auth required) |
+
+Notes:
+- Default bind is **localhost only** (`127.0.0.1`). To expose on a network, use `motion-bot serve --host 0.0.0.0` and put **HTTPS + firewall** in front.
+- This is a **shared site password**, not multi-user accounts.
+- Do not commit real passwords; see `.env.example`.
+
+## CLI quick start
 
 ```bash
 # See sample + imported templates

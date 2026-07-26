@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block title %}Generate · Motion Bot{% endblock %}
+{% block content %}
+  <div class="card">
+    <h1>Generate motion</h1>
+    <p class="muted">Fill case fields and download a Word (.docx) motion.</p>
+  </div>
+
+  <div class="card">
+    {% if error %}
+      <div class="error-banner">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="/generate">
+      <label for="template_id">Template</label>
+      <select id="template_id" name="template_id" required onchange="if(this.value){ window.location='/generate?template_id='+encodeURIComponent(this.value); }">
+        <option value="">Select a template…</option>
+        {% for e in entries %}
+          <option value="{{ e.id }}" {% if selected and selected.id == e.id %}selected{% endif %}>
+            {{ e.name }}{% if e.jurisdiction %} ({{ e.jurisdiction }}){% endif %}
+          </option>
+        {% endfor %}
+      </select>
+
+      <h2 class="section-title">Caption</h2>
+      <div class="grid-2">
+        <div>
+          <label for="motion_title">Motion title</label>
+          <input id="motion_title" name="motion_title" type="text"
+                 value="{{ form_defaults.get('motion_title', selected.name if selected else '') }}" required />
+        </div>
+        <div>
+          <label for="case_number">Case number</label>
+          <input id="case_number" name="case_number" type="text" value="{{ form_defaults.get('case_number', '') }}" />
+        </div>
+        <div>
+          <label for="court_name">Court name</label>
+          <input id="court_name" name="court_name" type="text" value="{{ form_defaults.get('court_name', '') }}" />
+        </div>
+        <div>
+          <label for="court_division">Division</label>
+          <input id="court_division" name="court_division" type="text" value="{{ form_defaults.get('court_division', 'Criminal') }}" />
+        </div>
+        <div>
+          <label for="county">County</label>
+          <input id="county" name="county" type="text" value="{{ form_defaults.get('county', '') }}" />
+        </div>
+        <div>
+          <label for="state">State</label>
+          <input id="state" name="state" type="text" value="{{ form_defaults.get('state', 'Florida') }}" />
+        </div>
+        <div>
+          <label for="court_level">Court level (e.g. CIRCUIT)</label>
+          <input id="court_level" name="court_level" type="text" value="{{ form_defaults.get('court_level', 'CIRCUIT') }}" />
+        </div>
+        <div>
+          <label for="judicial_circuit">Judicial circuit (e.g. NINTH)</label>
+          <input id="judicial_circuit" name="judicial_circuit" type="text" value="{{ form_defaults.get('judicial_circuit', '') }}" />
+        </div>
+        <div>
+          <label for="plaintiff">Plaintiff</label>
+          <input id="plaintiff" name="plaintiff" type="text" value="{{ form_defaults.get('plaintiff', 'State of Florida') }}" />
+        </div>
+        <div>
+          <label for="defendant_name">Defendant</label>
+          <input id="defendant_name" name="defendant_name" type="text" value="{{ form_defaults.get('defendant_name', '') }}" />
+        </div>
+        <div>
+          <label for="judge">Judge</label>
+          <input id="judge" name="judge" type="text" value="{{ form_defaults.get('judge', '') }}" />
+        </div>
+        <div>
+          <label for="filing_date">Filing date</label>
+          <input id="filing_date" name="filing_date" type="text" value="{{ form_defaults.get('filing_date', today) }}" />
+        </div>
+      </div>
+
+      <h2 class="section-title">Counsel</h2>
+      <div class="grid-2">
+        <div>
+          <label for="counsel_name">Attorney name</label>
+          <input id="counsel_name" name="counsel_name" type="text" value="{{ form_defaults.get('counsel_name', '') }}" />
+        </div>
+        <div>
+          <label for="counsel_bar">Florida Bar number</label>
+          <input id="counsel_bar" name="counsel_bar" type="text" value="{{ form_defaults.get('counsel_bar', '') }}" />
+        </div>
+        <div>
+          <label for="counsel_firm">Firm</label>
+          <input id="counsel_firm" name="counsel_firm" type="text" value="{{ form_defaults.get('counsel_firm', '') }}" />
+        </div>
+        <div>
+          <label for="counsel_phone">Phone</label>
+          <input id="counsel_phone" name="counsel_phone" type="text" value="{{ form_defaults.get('counsel_phone', '') }}" />
+        </div>
+        <div>
+          <label for="counsel_email">Service email</label>
+          <input id="counsel_email" name="counsel_email" type="text" value="{{ form_defaults.get('counsel_email', '') }}" />
+        </div>
+        <div>
+          <label for="counsel_address">Address</label>
+          <input id="counsel_address" name="counsel_address" type="text" value="{{ form_defaults.get('counsel_address', '') }}" />
+        </div>
+      </div>
+
+      <h2 class="section-title">Motion-specific fields</h2>
+      <div class="grid-2">
+        <div>
+          <label for="charging_date">Charging date</label>
+          <input id="charging_date" name="charging_date" type="text" value="{{ form_defaults.get('charging_date', '') }}" />
+        </div>
+        <div>
+          <label for="current_trial_date">Current trial date</label>
+          <input id="current_trial_date" name="current_trial_date" type="text" value="{{ form_defaults.get('current_trial_date', '') }}" />
+        </div>
+        <div>
+          <label for="requested_continuance_date">Requested continuance date</label>
+          <input id="requested_continuance_date" name="requested_continuance_date" type="text" value="{{ form_defaults.get('requested_continuance_date', '') }}" />
+        </div>
+        <div>
+          <label for="service_date">Certificate service date</label>
+          <input id="service_date" name="service_date" type="text" value="{{ form_defaults.get('service_date', '') }}" />
+        </div>
+        <div>
+          <label for="eyewitness_name">Eyewitness name</label>
+          <input id="eyewitness_name" name="eyewitness_name" type="text" value="{{ form_defaults.get('eyewitness_name', '') }}" />
+        </div>
+        <div>
+          <label for="officer_name">Officer name</label>
+          <input id="officer_name" name="officer_name" type="text" value="{{ form_defaults.get('officer_name', '') }}" />
+        </div>
+        <div>
+          <label for="identification_date">Identification date</label>
+          <input id="identification_date" name="identification_date" type="text" value="{{ form_defaults.get('identification_date', '') }}" />
+        </div>
+        <div>
+          <label for="identification_place">Identification place</label>
+          <input id="identification_place" name="identification_place" type="text" value="{{ form_defaults.get('identification_place', '') }}" />
+        </div>
+        <div>
+          <label for="charged_offense">Charged offense</label>
+          <input id="charged_offense" name="charged_offense" type="text" value="{{ form_defaults.get('charged_offense', '') }}" />
+        </div>
+        <div>
+          <label for="suggestive_procedure">Suggestive procedure</label>
+          <input id="suggestive_procedure" name="suggestive_procedure" type="text" value="{{ form_defaults.get('suggestive_procedure', '') }}" />
+        </div>
+      </div>
+
+      <label for="additional_grounds">Additional grounds</label>
+      <textarea id="additional_grounds" name="additional_grounds">{{ form_defaults.get('additional_grounds', '') }}</textarea>
+
+      <label for="factual_background">Factual background</label>
+      <textarea id="factual_background" name="factual_background">{{ form_defaults.get('factual_background', '') }}</textarea>
+
+      <label for="legal_argument">Legal argument</label>
+      <textarea id="legal_argument" name="legal_argument">{{ form_defaults.get('legal_argument', '') }}</textarea>
+
+      <label for="suppression_relief">Suppression / specific relief language</label>
+      <textarea id="suppression_relief" name="suppression_relief">{{ form_defaults.get('suppression_relief', '') }}</textarea>
+
+      <label for="prayer_for_relief">Prayer for relief (optional extra)</label>
+      <textarea id="prayer_for_relief" name="prayer_for_relief">{{ form_defaults.get('prayer_for_relief', '') }}</textarea>
+
+      <label for="certificate_of_service">Certificate of service (extra text)</label>
+      <textarea id="certificate_of_service" name="certificate_of_service">{{ form_defaults.get('certificate_of_service', '') }}</textarea>
+
+      <label for="custom_yaml">Extra custom fields (YAML)</label>
+      <textarea id="custom_yaml" name="custom_yaml" placeholder="identification_medium: a single mug-shot photograph">{{ form_defaults.get('custom_yaml', '') }}</textarea>
+
+      {% if placeholders %}
+        <p class="muted">Template placeholders:
+          {% for p in placeholders %}<span class="chip">{{ p }}</span> {% endfor %}
+        </p>
+      {% endif %}
+
+      <div class="actions">
+        <button class="btn" type="submit">Generate Word motion</button>
+        <a class="btn secondary" href="/dashboard">Cancel</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}

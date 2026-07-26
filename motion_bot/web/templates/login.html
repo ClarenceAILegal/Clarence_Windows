@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login · Motion Bot</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="login-shell">
+    <div class="card login-card">
+      <span class="brand">Motion Bot</span>
+      <p class="muted" style="margin-top:0;">Private access — enter the site password.</p>
+
+      {% if error %}
+        <div class="error-banner">{{ error }}</div>
+      {% endif %}
+
+      <form method="post" action="/login">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required autofocus />
+        <button class="btn" type="submit" style="width:100%;">Sign in</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

@@ -167,5 +167,37 @@ def paths_cmd() -> None:
     click.echo(f"output:          {OUTPUT_DIR}")
 
 
+@main.command("serve")
+@click.option("--host", default="127.0.0.1", show_default=True, help="Bind address.")
+@click.option("--port", default=8000, show_default=True, type=int, help="Port.")
+@click.option("--reload", is_flag=True, help="Auto-reload on code changes (dev only).")
+def serve_cmd(host: str, port: int, reload: bool) -> None:
+    """Run the password-protected private web UI.
+
+    Requires MOTION_BOT_PASSWORD in the environment. Optional:
+    MOTION_BOT_SECRET_KEY for stable session cookies across restarts.
+    """
+    import os
+
+    import uvicorn
+
+    if not os.environ.get("MOTION_BOT_PASSWORD", "").strip():
+        raise click.ClickException(
+            "Set MOTION_BOT_PASSWORD before starting the web UI.\n"
+            "Example:\n"
+            "  export MOTION_BOT_PASSWORD='your-strong-password'\n"
+            "  motion-bot serve"
+        )
+
+    click.echo(f"Motion Bot private site: http://{host}:{port}")
+    click.echo("All features require the site password.")
+    uvicorn.run(
+        "motion_bot.web.app:app",
+        host=host,
+        port=port,
+        reload=reload,
+    )
+
+
 if __name__ == "__main__":
     main()

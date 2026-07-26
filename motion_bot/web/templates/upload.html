@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Upload · Motion Bot{% endblock %}
+{% block content %}
+  <div class="card">
+    <h1>Upload template</h1>
+    <p class="muted">
+      Import a LexisNexis-downloaded Word template (.docx). PDFs must be converted to .docx first.
+      Templates with <code>{{ '{{ field }}' }}</code> placeholders can be filled on Generate.
+    </p>
+  </div>
+
+  <div class="card">
+    {% if error %}
+      <div class="error-banner">{{ error }}</div>
+    {% endif %}
+    <form method="post" action="/upload" enctype="multipart/form-data">
+      <label for="file">Word template (.docx)</label>
+      <input id="file" name="file" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required />
+
+      <div class="grid-2">
+        <div>
+          <label for="template_id">Template id (optional)</label>
+          <input id="template_id" name="template_id" type="text" placeholder="fl-motion-to-dismiss" />
+        </div>
+        <div>
+          <label for="name">Display name (optional)</label>
+          <input id="name" name="name" type="text" placeholder="Motion to Dismiss" />
+        </div>
+        <div>
+          <label for="jurisdiction">Jurisdiction</label>
+          <input id="jurisdiction" name="jurisdiction" type="text" value="FL" />
+        </div>
+        <div>
+          <label for="motion_type">Motion type</label>
+          <input id="motion_type" name="motion_type" type="text" placeholder="dismiss, compel, continuance…" />
+        </div>
+      </div>
+
+      <label for="description">Description</label>
+      <textarea id="description" name="description"></textarea>
+
+      <div class="actions">
+        <button class="btn" type="submit">Import template</button>
+        <a class="btn secondary" href="/dashboard">Cancel</a>
+      </div>
+    </form>
+  </div>
+{% endblock %}
