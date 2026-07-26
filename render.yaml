@@ -4,8 +4,32 @@ services:
     runtime: python
     plan: free
     region: oregon
-    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
-    startCommand: uvicorn motion_bot.web.app:app --host 0.0.0.0 --port $PORT
+    # If repo root is nested (e.g. Motion-Bot/), cd into the folder that contains requirements.txt
+    buildCommand: |
+      set -e
+      if [ -f requirements.txt ]; then
+        ROOT="."
+      elif [ -f Motion-Bot/requirements.txt ]; then
+        ROOT="Motion-Bot"
+      elif [ -f clarence/requirements.txt ]; then
+        ROOT="clarence"
+      else
+        echo "Cannot find requirements.txt. Workspace contents:"
+        ls -la
+        find . -maxdepth 3 -name 'requirements.txt' -print || true
+        exit 1
+      fi
+      cd "$ROOT"
+      echo "Building from: $(pwd)"
+      ls -la
+      pip install --upgrade pip setuptools wheel
+      pip install -r requirements.txt
+    startCommand: |
+      if [ -f requirements.txt ]; then cd .;
+      elif [ -f Motion-Bot/requirements.txt ]; then cd Motion-Bot;
+      elif [ -f clarence/requirements.txt ]; then cd clarence;
+      fi
+      uvicorn motion_bot.web.app:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
       - key: MOTION_BOT_PASSWORD
