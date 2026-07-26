@@ -145,8 +145,8 @@
 
     function strokeColor(alpha) {
       if (opts.theme === "login") {
-        // Cool light lines on navy
-        return "rgba(170, 210, 255, " + alpha + ")";
+        // Brighter cool lines so the lattice is obvious on navy
+        return "rgba(190, 220, 255, " + alpha + ")";
       }
       return "rgba(150, 90, 95, " + alpha + ")";
     }
@@ -181,9 +181,9 @@
       const originX = -span * 0.55;
       const originY = -span * 0.2;
 
-      // Slightly thicker lines as intensity rises
-      const baseW = opts.theme === "login" ? 0.9 : 0.85;
-      ctx.lineWidth = Math.max(0.7, (baseW * (0.85 + intensity * 0.2)) / dpr);
+      // Slightly thicker lines as intensity rises (login denser for visibility)
+      const baseW = opts.theme === "login" ? 1.15 : 0.85;
+      ctx.lineWidth = Math.max(0.7, (baseW * (0.9 + intensity * 0.25)) / dpr);
       ctx.lineJoin = "round";
       ctx.lineCap = "round";
 
@@ -214,10 +214,10 @@
 
             let alpha =
               opts.theme === "login"
-                ? 0.16 + vis * 0.45
+                ? 0.28 + vis * 0.55
                 : 0.08 + vis * 0.32;
             // Brighten slightly as intensity rises
-            alpha = Math.min(0.85, alpha * (0.85 + intensity * 0.2));
+            alpha = Math.min(0.92, alpha * (0.85 + intensity * 0.2));
             ctx.strokeStyle = strokeColor(alpha);
             ctx.beginPath();
             ctx.moveTo(sa.x, sa.y);

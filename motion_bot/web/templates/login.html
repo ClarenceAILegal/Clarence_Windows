@@ -4,9 +4,16 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Password</title>
-  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="stylesheet" href="/static/style.css?v=login-blue-lattice-3" />
+  <style>
+    /* Hard guarantee if an old stylesheet is cached */
+    html, body.login-page {
+      background: #000080 !important;
+      min-height: 100vh;
+    }
+  </style>
 </head>
-<body class="login-page" id="login-body">
+<body class="login-page" id="login-body" style="background:#000080;">
   <canvas id="login-lattice" aria-hidden="true"></canvas>
   <div class="login-fade-overlay" id="login-fade" aria-hidden="true"></div>
 
@@ -29,7 +36,7 @@
   <div class="login-error" id="login-error" hidden></div>
   {% endif %}
 
-  <script src="/static/lattice.js"></script>
+  <script src="/static/lattice.js?v=login-blue-lattice-3"></script>
   <script>
     (function () {
       var form = document.getElementById("login-form");
@@ -37,15 +44,26 @@
       var err = document.getElementById("login-error");
       var body = document.getElementById("login-body");
       var fade = document.getElementById("login-fade");
+      var canvas = document.getElementById("login-lattice");
       var unlocking = false;
 
       // Same undulating lattice as the main page, blue theme
       var lattice = null;
-      if (window.MotionBotLattice) {
-        lattice = window.MotionBotLattice.start(
-          document.getElementById("login-lattice"),
-          { theme: "login", intensity: 1, speed: 1 }
-        );
+      function startLattice() {
+        if (!window.MotionBotLattice || !canvas) {
+          console.error("Clarence: lattice failed to load");
+          return;
+        }
+        lattice = window.MotionBotLattice.start(canvas, {
+          theme: "login",
+          intensity: 1.15,
+          speed: 1,
+        });
+      }
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", startLattice);
+      } else {
+        startLattice();
       }
 
       function showError(msg) {

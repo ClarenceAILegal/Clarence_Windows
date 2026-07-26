@@ -26,7 +26,8 @@ html, body {
 
 /* ---------- LOGIN SHELL ---------- */
 body.login-page {
-  background: var(--win-blue);
+  background: #000080 !important;
+  background-color: #000080 !important;
   font-family: var(--font-win);
   color: var(--win-light);
   min-height: 100vh;
@@ -43,6 +44,8 @@ body.login-page {
   height: 100%;
   z-index: 0;
   pointer-events: none;
+  display: block;
+  opacity: 1;
 }
 
 .login-fade-overlay {
