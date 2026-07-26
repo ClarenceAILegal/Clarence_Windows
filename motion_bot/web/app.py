@@ -370,6 +370,44 @@ def _upload_ctx(
     )
 
 
+def _import_uploaded_docx(
+    upload: UploadFile,
+    *,
+    template_id: str = "",
+    name: str = "",
+    description: str = "",
+    jurisdiction: str = "FL",
+    motion_type: str = "",
+    suggested: str = "",
+):
+    """Save upload to temp, import into library, return TemplateEntry. Raises ValueError."""
+    filename = upload.filename or ""
+    if not filename.lower().endswith(".docx"):
+        raise ValueError("Only .docx files are supported. Convert PDFs to .docx first.")
+
+    suffix = Path(filename).suffix or ".docx"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp_path = Path(tmp.name)
+        shutil.copyfileobj(upload.file, tmp)
+
+    try:
+        return import_template(
+            tmp_path,
+            template_id=template_id.strip() or None,
+            name=name.strip() or None,
+            description=(
+                description.strip()
+                or suggested.strip()
+                or f"Uploaded template ({filename})"
+            ),
+            jurisdiction=(jurisdiction or "FL").strip(),
+            motion_type=motion_type.strip(),
+            notes="Uploaded via Clarence and automatically added to the library.",
+        )
+    finally:
+        tmp_path.unlink(missing_ok=True)
+
+
 @app.get("/upload", response_class=HTMLResponse)
 async def upload_page(
     request: Request,
@@ -420,42 +458,17 @@ async def upload_submit(
         "description": description,
     }
 
-    filename = file.filename or ""
-    if not filename.lower().endswith(".docx"):
-        return templates.TemplateResponse(
-            "upload.html",
-            _upload_ctx(
-                request,
-                error="Only .docx files are supported. Convert PDFs to .docx first.",
-                suggested_query=suggested,
-                next_url=next_url,
-                form_defaults=form_defaults,
-            ),
-            status_code=400,
-        )
-
-    suffix = Path(filename).suffix or ".docx"
-    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-        tmp_path = Path(tmp.name)
-        shutil.copyfileobj(file.file, tmp)
-
     try:
-        # Always copy into templates/library and register in the catalog.
-        entry = import_template(
-            tmp_path,
-            template_id=template_id.strip() or None,
-            name=name.strip() or None,
-            description=(
-                description.strip()
-                or suggested
-                or f"Uploaded template ({filename})"
-            ),
-            jurisdiction=jurisdiction.strip(),
-            motion_type=motion_type.strip(),
-            notes="Uploaded via Clarence and automatically added to the library.",
+        entry = _import_uploaded_docx(
+            file,
+            template_id=template_id,
+            name=name,
+            description=description,
+            jurisdiction=jurisdiction,
+            motion_type=motion_type,
+            suggested=suggested,
         )
     except Exception as exc:  # noqa: BLE001
-        tmp_path.unlink(missing_ok=True)
         return templates.TemplateResponse(
             "upload.html",
             _upload_ctx(
@@ -467,21 +480,59 @@ async def upload_submit(
             ),
             status_code=400,
         )
-    finally:
-        tmp_path.unlink(missing_ok=True)
 
     _flash(
         request,
         f"Added to library: {entry.name}. You can search for it or generate a motion.",
         "success",
     )
-    # Prefer template page so user sees it was catalogued; optional return to search
     if suggested:
         return RedirectResponse(
             url=f"/home?q={quote(suggested)}",
             status_code=303,
         )
     return RedirectResponse(url=f"/templates/{entry.id}", status_code=303)
+
+
+@app.post("/api/upload")
+async def api_upload(
+    request: Request,
+    file: UploadFile = File(...),
+    name: str = Form(""),
+    description: str = Form(""),
+    jurisdiction: str = Form("FL"),
+    motion_type: str = Form(""),
+    suggested_query: str = Form(""),
+):
+    """Drag-and-drop upload: always adds .docx to the library. Returns JSON."""
+    if not _authed(request):
+        return JSONResponse({"ok": False, "error": "Not authenticated."}, status_code=401)
+
+    suggested = (suggested_query or "").strip()
+    try:
+        entry = _import_uploaded_docx(
+            file,
+            name=name,
+            description=description,
+            jurisdiction=jurisdiction,
+            motion_type=motion_type,
+            suggested=suggested,
+        )
+    except Exception as exc:  # noqa: BLE001
+        return JSONResponse({"ok": False, "error": str(exc)}, status_code=400)
+
+    return JSONResponse(
+        {
+            "ok": True,
+            "id": entry.id,
+            "name": entry.name,
+            "description": entry.description,
+            "jurisdiction": entry.jurisdiction,
+            "motion_type": entry.motion_type,
+            "source": entry.source,
+            "message": f"Added to library: {entry.name}",
+        }
+    )
 
 
 @app.get("/health")

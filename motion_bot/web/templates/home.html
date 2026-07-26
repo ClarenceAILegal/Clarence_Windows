@@ -19,15 +19,21 @@
         <button class="search-submit" type="submit">Search</button>
       </form>
 
-      <div class="search-aux">
-        <a class="upload-link" href="/upload{% if query %}?q={{ query|urlencode }}{% endif %}">
-          Upload a template
-        </a>
-        <span class="search-aux-note">Adds it to your library automatically</span>
+      <div
+        class="drop-zone"
+        id="drop-zone"
+        data-query="{{ query }}"
+        aria-label="Drop a Word template here to add it to your library"
+      >
+        <div class="drop-zone-inner">
+          <p class="drop-zone-title">Drop a .docx template here</p>
+          <p class="drop-zone-sub">It’s added to your library automatically</p>
+          <p class="drop-zone-status" id="drop-status" hidden></p>
+        </div>
       </div>
 
       {% if query %}
-      <div class="results">
+      <div class="results" id="results">
         {% if results %}
           {% for entry, score in results %}
           <article class="result-card">
@@ -47,27 +53,177 @@
           </article>
           {% endfor %}
           <p class="results-footer muted">
-            Not what you need?
-            <a href="/upload?q={{ query|urlencode }}">Upload a different template</a>
-            — it will be added to the library.
+            Not what you need? Drop a .docx on the zone above — it joins the library automatically.
           </p>
         {% else %}
           <div class="result-card result-card-prompt">
             <div>
               <h3>No match in your library</h3>
               <p>
-                Nothing for “{{ query }}”. Upload a Word template (.docx) and Clarence
-                will add it to your library automatically.
+                Nothing for “{{ query }}”. Drop a Word template (.docx) on the zone above
+                and Clarence will add it to your library automatically.
               </p>
-            </div>
-            <div class="result-actions">
-              <a class="btn primary" href="/upload?q={{ query|urlencode }}">Upload template</a>
-              <a class="btn ghost" href="/library">Browse library</a>
             </div>
           </div>
         {% endif %}
       </div>
+      {% else %}
+      <div class="results" id="results" hidden></div>
       {% endif %}
     </div>
   </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  const zone = document.getElementById("drop-zone");
+  const statusEl = document.getElementById("drop-status");
+  const results = document.getElementById("results");
+  if (!zone) return;
+
+  let dragDepth = 0;
+
+  function setStatus(msg, kind) {
+    if (!statusEl) return;
+    statusEl.hidden = !msg;
+    statusEl.textContent = msg || "";
+    statusEl.className = "drop-zone-status" + (kind ? " is-" + kind : "");
+  }
+
+  function highlight(on) {
+    zone.classList.toggle("is-dragover", !!on);
+  }
+
+  async function uploadFile(file) {
+    if (!file) return;
+    const name = (file.name || "").toLowerCase();
+    if (!name.endsWith(".docx")) {
+      setStatus("Only .docx Word templates can be added.", "error");
+      return;
+    }
+
+    setStatus("Adding to library…", "pending");
+    zone.classList.add("is-uploading");
+
+    const body = new FormData();
+    body.append("file", file, file.name);
+    const q = zone.getAttribute("data-query") || "";
+    if (q) {
+      body.append("suggested_query", q);
+      body.append("description", q);
+      body.append("name", q);
+    }
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: body,
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
+      });
+      const data = await res.json().catch(function () { return {}; });
+      if (!res.ok || !data.ok) {
+        setStatus((data && data.error) || "Upload failed.", "error");
+        return;
+      }
+      setStatus(data.message || ("Added to library: " + data.name), "success");
+      prependResult(data);
+    } catch (err) {
+      setStatus("Upload failed. Check your connection and try again.", "error");
+    } finally {
+      zone.classList.remove("is-uploading");
+    }
+  }
+
+  function prependResult(data) {
+    if (!results) return;
+    results.hidden = false;
+    // Remove empty-state prompt if present
+    const prompt = results.querySelector(".result-card-prompt");
+    if (prompt) prompt.remove();
+
+    const card = document.createElement("article");
+    card.className = "result-card result-card-new";
+    card.innerHTML =
+      "<div>" +
+      "<h3></h3>" +
+      "<p></p>" +
+      '<div class="result-meta"></div>' +
+      "</div>" +
+      '<div class="result-actions">' +
+      '<a class="btn primary" href=""></a>' +
+      '<a class="btn ghost" href=""></a>' +
+      "</div>";
+    card.querySelector("h3").textContent = data.name || data.id;
+    card.querySelector("p").textContent =
+      data.description || "Just added to your library.";
+    const meta = card.querySelector(".result-meta");
+    if (data.jurisdiction) {
+      const b = document.createElement("span");
+      b.className = "badge";
+      b.textContent = data.jurisdiction;
+      meta.appendChild(b);
+    }
+    if (data.motion_type) {
+      const b = document.createElement("span");
+      b.className = "badge";
+      b.textContent = data.motion_type;
+      meta.appendChild(b);
+    }
+    const src = document.createElement("span");
+    src.className = "badge";
+    src.textContent = data.source || "library";
+    meta.appendChild(src);
+    const links = card.querySelectorAll("a");
+    links[0].href = "/generate?template_id=" + encodeURIComponent(data.id);
+    links[0].textContent = "Use";
+    links[1].href = "/templates/" + encodeURIComponent(data.id);
+    links[1].textContent = "Details";
+    results.insertBefore(card, results.firstChild);
+  }
+
+  // Prevent browser from opening the file when dropped outside intentional targets
+  ["dragenter", "dragover", "dragleave", "drop"].forEach(function (evt) {
+    document.addEventListener(evt, function (e) {
+      e.preventDefault();
+    });
+  });
+
+  zone.addEventListener("dragenter", function (e) {
+    e.preventDefault();
+    dragDepth += 1;
+    highlight(true);
+  });
+  zone.addEventListener("dragleave", function (e) {
+    e.preventDefault();
+    dragDepth = Math.max(0, dragDepth - 1);
+    if (dragDepth === 0) highlight(false);
+  });
+  zone.addEventListener("dragover", function (e) {
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+    highlight(true);
+  });
+  zone.addEventListener("drop", function (e) {
+    e.preventDefault();
+    dragDepth = 0;
+    highlight(false);
+    const files = e.dataTransfer && e.dataTransfer.files;
+    if (!files || !files.length) {
+      setStatus("No file detected.", "error");
+      return;
+    }
+    // Upload first .docx found (or first file and let API reject)
+    let file = null;
+    for (let i = 0; i < files.length; i++) {
+      if ((files[i].name || "").toLowerCase().endsWith(".docx")) {
+        file = files[i];
+        break;
+      }
+    }
+    uploadFile(file || files[0]);
+  });
+})();
+</script>
 {% endblock %}
