@@ -27,17 +27,17 @@
             </svg>
           </div>
           <div class="chat-bubble chat-bubble-clarence">
-            <div class="chat-typing" id="chat-typing">
-              <span></span><span></span><span></span>
-            </div>
-            <div class="chat-reply" id="chat-reply">
+            {# Reply is always visible (no hidden state) so prompts are never missed #}
+            <div class="chat-reply is-visible" id="chat-reply">
               {% if generate_error %}
                 <p>{{ generate_error }}</p>
                 {% if not results %}
                 <p>
-                  Would you like to <strong>upload a template</strong> for this motion?
-                  If so, drop a Word file (.docx) on the bar below — I’ll add it to your library automatically,
-                  then you can send this request again.
+                  <strong>Would you like to upload a template</strong> for this motion?
+                </p>
+                <p class="chat-upload-ask">
+                  Drop a Word file (.docx) on the bar below — I’ll add it to your library automatically,
+                  then send this request again.
                 </p>
                 {% endif %}
               {% elif results %}
@@ -74,12 +74,16 @@
                 {% endif %}
               {% else %}
                 <p>
-                  I don’t have a matching motion template in your library for that request.
+                  I don’t have a matching motion template in your library for
+                  “{{ query }}”.
                 </p>
                 <p>
                   <strong>Would you like to upload a template?</strong>
-                  Drop a Word document (.docx) onto the bar below and I’ll add it to your library automatically.
-                  Then send your request again and we can generate or fill the form.
+                </p>
+                <p class="chat-upload-ask">
+                  Drop a Word document (.docx) onto the bar below and I’ll add it to your library
+                  automatically. Then send your request again so we can generate the motion or walk
+                  through the form.
                 </p>
               {% endif %}
             </div>
@@ -158,16 +162,6 @@
 {% block scripts %}
 <script>
 (function () {
-  // Show Clarence reply after a short typing beat
-  var typing = document.getElementById("chat-typing");
-  var reply = document.getElementById("chat-reply");
-  if (typing && reply) {
-    window.setTimeout(function () {
-      typing.style.display = "none";
-      reply.classList.add("is-visible");
-    }, 900);
-  }
-
   var form = document.getElementById("search-form");
   var field = document.getElementById("search-field");
   var input = document.getElementById("motion-query");
