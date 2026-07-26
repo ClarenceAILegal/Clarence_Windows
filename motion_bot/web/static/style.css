@@ -145,6 +145,59 @@ body.app-page::after {
   background: transparent;
 }
 
+/*
+  Full-body angry teddy watermark.
+  Anchored in the lattice fade band (mid-diagonal), not the clean logo corner.
+  Lattice stays under; UI stays above. Opacity keeps it watermark-only.
+*/
+.bear-watermark {
+  position: fixed;
+  /* Lattice fades along TL→BR; sit in that soft mid zone */
+  left: 54%;
+  top: 52%;
+  transform: translate(-50%, -50%);
+  width: min(78vmin, 720px);
+  height: auto;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.055;
+  user-select: none;
+}
+
+.bear-watermark-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.bear-watermark-svg ellipse,
+.bear-watermark-svg circle {
+  fill: #1c1012;
+  stroke: #1c1012;
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+}
+
+.bear-watermark-svg .bear-wm-soft {
+  fill: #1c1012;
+  stroke: #1c1012;
+  opacity: 0.35;
+}
+
+.bear-watermark-svg .bear-wm-fill {
+  fill: #1c1012;
+  stroke: none;
+}
+
+.bear-watermark-svg .bear-wm-line {
+  fill: none;
+  stroke: #1c1012;
+  stroke-width: 3.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 #future-ripples {
   position: fixed;
   inset: 0;
