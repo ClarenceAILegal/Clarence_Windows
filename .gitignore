@@ -15,7 +15,7 @@ dist/
 build/
 output/*
 !output/.gitkeep
-# Keep fillable .docx templates tracked; ignore raw Lexis PDF downloads (copyrighted)
-templates/lexis/sources/*
-!templates/lexis/sources/.gitkeep
-!templates/lexis/README.md
+# Keep fillable .docx templates tracked; ignore raw source archives
+templates/library/sources/*
+!templates/library/sources/.gitkeep
+!templates/library/README.md

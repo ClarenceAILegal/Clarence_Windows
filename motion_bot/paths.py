@@ -7,7 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = ROOT / "templates"
 SAMPLE_TEMPLATES_DIR = TEMPLATES_DIR / "sample"
-LEXIS_TEMPLATES_DIR = TEMPLATES_DIR / "lexis"
+LIBRARY_TEMPLATES_DIR = TEMPLATES_DIR / "library"
 CASES_DIR = ROOT / "data" / "cases"
 OUTPUT_DIR = ROOT / "output"
 MANIFEST_PATH = TEMPLATES_DIR / "manifest.yaml"
@@ -18,7 +18,7 @@ def ensure_runtime_dirs() -> None:
     for path in (
         TEMPLATES_DIR,
         SAMPLE_TEMPLATES_DIR,
-        LEXIS_TEMPLATES_DIR,
+        LIBRARY_TEMPLATES_DIR,
         CASES_DIR,
         OUTPUT_DIR,
     ):

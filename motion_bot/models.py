@@ -80,7 +80,7 @@ class MotionRequest:
             "movant": self.movant.to_context(),
             "respondent": self.respondent.to_context() if self.respondent else {},
         }
-        # Common flat aliases for simpler Lexis-style placeholders
+        # Common flat aliases for simpler template placeholders
         cap = self.caption
         mov = self.movant
         ctx.update(

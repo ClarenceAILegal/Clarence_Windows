@@ -1,4 +1,4 @@
-"""Template catalog: register LexisNexis-downloaded and sample motion templates."""
+"""Template catalog: register imported and sample motion templates."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from typing import Any
 import yaml
 
 from motion_bot.paths import (
-    LEXIS_TEMPLATES_DIR,
+    LIBRARY_TEMPLATES_DIR,
     MANIFEST_PATH,
     SAMPLE_TEMPLATES_DIR,
     TEMPLATES_DIR,
@@ -31,7 +31,7 @@ class TemplateEntry:
     id: str
     name: str
     path: Path
-    source: str  # "lexis" | "sample" | "custom"
+    source: str  # "library" | "sample" | "custom"
     description: str = ""
     jurisdiction: str = ""
     motion_type: str = ""
@@ -59,6 +59,10 @@ def _slugify(value: str) -> str:
     return slug or "template"
 
 
+def _normalize_source(source: str) -> str:
+    return source if source else "custom"
+
+
 def _load_manifest() -> dict[str, Any]:
     ensure_runtime_dirs()
     if not MANIFEST_PATH.exists():
@@ -78,7 +82,6 @@ def _save_manifest(data: dict[str, Any]) -> None:
 
 def discover_placeholders(docx_path: Path) -> list[str]:
     """Scan a .docx for Jinja-style placeholders used by docxtpl."""
-    # Lazy import: only needed when inspecting templates
     from docx import Document
 
     doc = Document(str(docx_path))
@@ -121,17 +124,17 @@ def _resolve_path(rel_or_abs: str | Path) -> Path:
 
 
 def list_templates() -> list[TemplateEntry]:
-    """Return registered templates; auto-register sample/lexis .docx files if missing."""
+    """Return registered templates; auto-register sample/library .docx files if missing."""
     ensure_runtime_dirs()
     data = _load_manifest()
     by_id: dict[str, dict[str, Any]] = {
         t["id"]: t for t in data["templates"] if isinstance(t, dict) and "id" in t
     }
 
-    # Auto-discover unregistered .docx under sample/ and lexis/
+    # Auto-discover unregistered .docx under sample/ and library/
     for source, directory in (
         ("sample", SAMPLE_TEMPLATES_DIR),
-        ("lexis", LEXIS_TEMPLATES_DIR),
+        ("library", LIBRARY_TEMPLATES_DIR),
     ):
         if not directory.exists():
             continue
@@ -156,8 +159,6 @@ def list_templates() -> list[TemplateEntry]:
             data["templates"].append(entry)
             by_id[tid] = entry
 
-    _save_manifest(data)
-
     entries: list[TemplateEntry] = []
     for raw in data["templates"]:
         path = _resolve_path(raw["path"])
@@ -166,7 +167,7 @@ def list_templates() -> list[TemplateEntry]:
                 id=raw["id"],
                 name=raw.get("name", raw["id"]),
                 path=path,
-                source=raw.get("source", "custom"),
+                source=_normalize_source(raw.get("source", "custom")),
                 description=raw.get("description", ""),
                 jurisdiction=raw.get("jurisdiction", ""),
                 motion_type=raw.get("motion_type", ""),
@@ -189,7 +190,7 @@ def get_template(template_id: str) -> TemplateEntry:
     raise KeyError(f"Unknown template_id '{template_id}'. Known: {known}")
 
 
-def import_lexis_template(
+def import_template(
     source_path: Path,
     *,
     template_id: str | None = None,
@@ -198,16 +199,11 @@ def import_lexis_template(
     jurisdiction: str = "",
     motion_type: str = "",
     notes: str = (
-        "Downloaded from LexisNexis by the user. Place Jinja placeholders "
+        "Imported motion template. Place Jinja placeholders "
         "like {{ case_number }} before generating."
     ),
 ) -> TemplateEntry:
-    """
-    Copy a user-downloaded LexisNexis .docx into templates/lexis and register it.
-
-    Motion Bot does not log into or scrape LexisNexis. Download templates through
-    your licensed LexisNexis account, then import the files here.
-    """
+    """Copy a user .docx into templates/library and register it."""
     ensure_runtime_dirs()
     source_path = Path(source_path).expanduser().resolve()
     if not source_path.exists():
@@ -216,20 +212,19 @@ def import_lexis_template(
         raise ValueError("Only .docx templates are supported. Convert .doc files first.")
 
     tid = template_id or _slugify(source_path.stem)
-    dest = LEXIS_TEMPLATES_DIR / f"{tid}.docx"
+    dest = LIBRARY_TEMPLATES_DIR / f"{tid}.docx"
     if source_path.resolve() != dest.resolve():
         shutil.copy2(source_path, dest)
 
     placeholders = discover_placeholders(dest)
     data = _load_manifest()
-    # Replace existing id if present
     data["templates"] = [t for t in data["templates"] if t.get("id") != tid]
     entry = {
         "id": tid,
         "name": name or source_path.stem.replace("_", " ").title(),
         "path": str(dest.relative_to(TEMPLATES_DIR)),
-        "source": "lexis",
-        "description": description or "LexisNexis-sourced motion template",
+        "source": "library",
+        "description": description or "Imported motion template",
         "jurisdiction": jurisdiction,
         "motion_type": motion_type,
         "placeholders": placeholders,

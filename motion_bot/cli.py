@@ -10,7 +10,7 @@ from motion_bot import __version__
 from motion_bot.case_io import dump_case_template, load_case_file
 from motion_bot.catalog import (
     get_template,
-    import_lexis_template,
+    import_template,
     list_templates,
     refresh_placeholders,
 )
@@ -23,19 +23,19 @@ from motion_bot.paths import CASES_DIR, OUTPUT_DIR, ensure_runtime_dirs
 def main() -> None:
     """Motion Bot — generate court motions as Word (.docx) from templates.
 
-    Import LexisNexis templates you download with your license, fill them with
-    case data, and write finished motion Word documents.
+    Import motion templates, fill them with case data, and write finished
+    Word documents.
     """
     ensure_runtime_dirs()
 
 
 @main.command("list-templates")
 def list_templates_cmd() -> None:
-    """List registered motion templates (sample + LexisNexis imports)."""
+    """List registered motion templates (sample + library imports)."""
     entries = list_templates()
     if not entries:
         click.echo("No templates registered yet.")
-        click.echo("Import a downloaded LexisNexis .docx with: motion-bot import-template PATH")
+        click.echo("Import a .docx with: motion-bot import-template PATH")
         return
     for e in entries:
         status = "ok" if e.path.exists() else "MISSING"
@@ -91,12 +91,8 @@ def import_template_cmd(
     motion_type: str,
     description: str,
 ) -> None:
-    """Import a LexisNexis-downloaded .docx into the local template library.
-
-    Motion Bot does not connect to LexisNexis. Download forms/templates through
-    your licensed account, then point this command at the file.
-    """
-    entry = import_lexis_template(
+    """Import a .docx motion template into the local library."""
+    entry = import_template(
         path,
         template_id=template_id,
         name=name,
@@ -154,7 +150,7 @@ def paths_cmd() -> None:
     """Print important project directories."""
     from motion_bot.paths import (
         CASES_DIR,
-        LEXIS_TEMPLATES_DIR,
+        LIBRARY_TEMPLATES_DIR,
         OUTPUT_DIR,
         SAMPLE_TEMPLATES_DIR,
         TEMPLATES_DIR,
@@ -162,7 +158,7 @@ def paths_cmd() -> None:
 
     click.echo(f"templates:       {TEMPLATES_DIR}")
     click.echo(f"  sample:        {SAMPLE_TEMPLATES_DIR}")
-    click.echo(f"  lexis imports: {LEXIS_TEMPLATES_DIR}")
+    click.echo(f"  library:       {LIBRARY_TEMPLATES_DIR}")
     click.echo(f"cases:           {CASES_DIR}")
     click.echo(f"output:          {OUTPUT_DIR}")
 

@@ -1,12 +1,10 @@
 # Motion Bot
 
-Generate court **motions as Word documents (`.docx`)** from templates you download from **LexisNexis**, filled with case-specific facts.
-
-Motion Bot does **not** log into or scrape LexisNexis. You download forms/templates with your licensed account, import them locally, mark fillable fields, then generate finished motions.
+Generate court **motions as Word documents (`.docx`)** from local templates filled with case-specific facts.
 
 ## What it does
 
-1. **Import** LexisNexis-downloaded `.docx` templates into a local library  
+1. **Import** `.docx` motion templates into a private library  
 2. **Catalog** templates with jurisdiction, motion type, and detected placeholders  
 3. **Fill** templates from YAML/JSON case files (caption, parties, facts, prayer, etc.)  
 4. **Write** court-ready motion Word documents to `output/`
@@ -42,7 +40,7 @@ motion-bot serve
 | `/home` | Futuristic motion search by description |
 | `/library` | Full template list + recent downloads |
 | `/generate` | Fill fields and generate a motion `.docx` |
-| `/upload` | Import a Lexis `.docx` template |
+| `/upload` | Import a `.docx` template |
 
 Notes:
 - Default bind is **localhost only** (`127.0.0.1`).
@@ -63,20 +61,20 @@ motion-bot generate data/cases/example_case.yaml
 
 Output lands in `output/`.
 
-## LexisNexis workflow
+## Template workflow
 
-1. In LexisNexis, download the motion form/template as **Word (`.docx`)**.  
+1. Obtain a motion form/template as **Word (`.docx`)**.  
 2. Import it:
 
 ```bash
-motion-bot import-template ~/Downloads/Your_Lexis_Motion.docx \
+motion-bot import-template ~/Downloads/Your_Motion.docx \
   --id motion-to-dismiss-ca \
   --name "Motion to Dismiss" \
   --jurisdiction CA \
   --motion-type dismiss
 ```
 
-3. Open the file under `templates/lexis/` in Word. Replace blanks with **Jinja** placeholders, e.g.:
+3. Open the file under `templates/library/` in Word. Replace blanks with **Jinja** placeholders, e.g.:
 
 | Field | Placeholder |
 |-------|-------------|
@@ -98,7 +96,7 @@ motion-bot show-template motion-to-dismiss-ca --refresh
 motion-bot generate path/to/your_case.yaml
 ```
 
-See [templates/lexis/README.md](templates/lexis/README.md) for details.
+See [templates/library/README.md](templates/library/README.md) for details.
 
 ## Case file format
 
@@ -116,33 +114,34 @@ JSON is also accepted (`.json`).
 
 | Command | Purpose |
 |---------|---------|
-| `motion-bot list-templates` | List sample + Lexis imports |
+| `motion-bot list-templates` | List sample + library imports |
 | `motion-bot show-template ID [--refresh]` | Inspect placeholders |
-| `motion-bot import-template PATH` | Import a downloaded Lexis `.docx` |
+| `motion-bot import-template PATH` | Import a `.docx` template |
 | `motion-bot init-case` | Write starter case YAML |
 | `motion-bot generate CASE_FILE` | Produce filled motion `.docx` |
 | `motion-bot paths` | Print project directories |
+| `motion-bot serve` | Run private web UI |
 
 ## Project layout
 
 ```
 Motion-Bot/
-  motion_bot/           # CLI + generator
+  motion_bot/           # CLI + generator + web UI
   templates/
     sample/             # Built-in sample motion template
-    lexis/              # Your LexisNexis downloads (imported here)
+    library/            # Your imported motion templates
     manifest.yaml       # Template registry (auto-maintained)
   data/cases/           # Case input YAML/JSON
   output/               # Generated motions
-  scripts/              # Sample template builder
+  scripts/              # Template builders
 ```
 
 ## Notes
 
 - Templates are filled with [docxtpl](https://docxtpl.readthedocs.io/) (Jinja2 inside Word).  
-- Keep Lexis-sourced files and client data consistent with your license and confidentiality rules.  
+- Keep client data confidential and consistent with your professional obligations.  
 - Sample output is a **demonstration** structure, not legal advice or a substitute for jurisdiction-specific practice.
 
 ## License / compliance
 
-You are responsible for LexisNexis license compliance, court local rules, and attorney review of every generated filing.
+You are responsible for court local rules and attorney review of every generated filing.

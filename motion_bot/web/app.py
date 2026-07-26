@@ -20,7 +20,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from motion_bot import __version__
 from motion_bot.catalog import (
     get_template,
-    import_lexis_template,
+    import_template,
     list_templates,
     refresh_placeholders,
 )
@@ -230,7 +230,7 @@ def _build_case_payload(form: Dict[str, Any]) -> Dict[str, Any]:
             raise ValueError("Custom fields must be a YAML/JSON object (key: value).")
         custom = loaded
 
-    # Promote common custom keys used by FL Lexis templates when provided in form
+    # Promote common custom keys used by FL motion templates when provided in form
     for key in (
         "defendant_name",
         "judicial_circuit",
@@ -389,7 +389,7 @@ async def upload_submit(
         shutil.copyfileobj(file.file, tmp)
 
     try:
-        entry = import_lexis_template(
+        entry = import_template(
             tmp_path,
             template_id=template_id.strip() or None,
             name=name.strip() or None,

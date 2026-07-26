@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build fillable Word templates from Lexis FL eyewitness-ID motion forms 8.08 / 8.09."""
+"""Build fillable Florida motion Word templates (eyewitness ID + related forms)."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.shared import Inches, Pt
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT_DIR = ROOT / "templates" / "lexis"
+OUT_DIR = ROOT / "templates" / "library"
 
 
 def _font(run, *, size=12, bold=False, italic=False) -> None:
@@ -234,7 +234,7 @@ def build_806_reference() -> Path:
     _p(doc, "EYEWITNESS IDENTIFICATION", center=True, bold=True, space_after=12)
     _p(
         doc,
-        "Source: LexisNexis Forms FORM 68710-8.06 — Florida Criminal Practice and Procedure. "
+        "Source: Florida Standard Jury Instruction 3.9(c) (reference abstract). "
         "This file is stored for reference when preparing identification motions; it is not a "
         "fillable motion template.",
         italic=True,
@@ -268,7 +268,7 @@ def build_806_reference() -> Path:
     )
     _p(
         doc,
-        "Full original text is retained in templates/lexis/sources/8.06-florida-jury-instruction-3.9c.pdf.",
+        "Full original text is retained in templates/library/sources/8.06-florida-jury-instruction-3.9c.pdf.",
         italic=True,
         space_before=12,
     )

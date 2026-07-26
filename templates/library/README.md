@@ -1,24 +1,18 @@
-# LexisNexis templates
+# Motion template library
 
-Place Word templates (`.docx`) you download from **LexisNexis** in this folder, or import them with:
+Place Word motion templates (`.docx`) in this folder, or import them with:
 
 ```bash
-motion-bot import-template /path/to/downloaded-form.docx \
+motion-bot import-template /path/to/form.docx \
   --id motion-to-dismiss \
   --name "Motion to Dismiss" \
   --jurisdiction CA \
   --motion-type dismiss
 ```
 
-## Important
-
-- Motion Bot does **not** log into, scrape, or download from LexisNexis.
-- Use your licensed LexisNexis account to download forms/templates, then import them here.
-- Respect LexisNexis terms of use and your firm’s licensing rules.
-
 ## Making templates fillable
 
-Open the `.docx` in Word and replace blanks / bracketed fields with Jinja placeholders, for example:
+Open the `.docx` in Word and replace blanks with Jinja placeholders, for example:
 
 | Placeholder | Example |
 |---|---|
