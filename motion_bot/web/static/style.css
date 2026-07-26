@@ -155,12 +155,12 @@ body.app-page::after {
   /* Left side where the lattice dissolves into white */
   left: 0;
   top: 50%;
-  transform: translate(-8%, -50%);
-  width: min(58vmin, 520px);
+  transform: translate(-6%, -50%);
+  width: min(62vmin, 560px);
   height: auto;
   z-index: 1;
   pointer-events: none;
-  opacity: 0.06;
+  opacity: 0.07;
   user-select: none;
 }
 
@@ -175,7 +175,7 @@ body.app-page::after {
 .bear-watermark-svg circle {
   fill: #1c1012;
   stroke: #1c1012;
-  stroke-width: 2.2;
+  stroke-width: 2.4;
   stroke-linejoin: round;
 }
 
@@ -193,9 +193,29 @@ body.app-page::after {
 .bear-watermark-svg .bear-wm-line {
   fill: none;
   stroke: #1c1012;
-  stroke-width: 3.2;
+  stroke-width: 3.4;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+/* Angry red robot eyes — slightly stronger so they read through watermark fade */
+.bear-watermark-svg .bear-wm-eye-socket {
+  fill: #1a0808;
+  stroke: #8f1f1f;
+  stroke-width: 2;
+}
+
+.bear-watermark-svg .bear-wm-eye-glow {
+  fill: #e23a3a;
+  stroke: none;
+  filter: drop-shadow(0 0 4px rgba(226, 58, 58, 0.85));
+}
+
+.bear-watermark-svg .bear-wm-eye-slit {
+  stroke: #ff6b6b;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  opacity: 0.95;
 }
 
 #future-ripples {

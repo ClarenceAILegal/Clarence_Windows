@@ -15,41 +15,32 @@
   {% endif %}
   <canvas id="graphene-lattice" aria-hidden="true"></canvas>
 
-  <!-- Giant watermark: full-body angry teddy, sits in lattice fade zone -->
+  <!-- Giant watermark: angry teddy head + red robot eyes (left lattice fade) -->
   <div class="bear-watermark" aria-hidden="true">
-    <svg class="bear-watermark-svg" viewBox="0 0 200 280" xmlns="http://www.w3.org/2000/svg">
-      <!-- legs -->
-      <ellipse cx="78" cy="238" rx="22" ry="28" />
-      <ellipse cx="122" cy="238" rx="22" ry="28" />
-      <!-- feet -->
-      <ellipse cx="74" cy="258" rx="20" ry="12" />
-      <ellipse cx="126" cy="258" rx="20" ry="12" />
-      <!-- body -->
-      <ellipse cx="100" cy="175" rx="52" ry="58" />
-      <!-- belly patch -->
-      <ellipse class="bear-wm-soft" cx="100" cy="182" rx="28" ry="32" />
-      <!-- arms -->
-      <ellipse cx="48" cy="168" rx="18" ry="34" transform="rotate(-18 48 168)" />
-      <ellipse cx="152" cy="168" rx="18" ry="34" transform="rotate(18 152 168)" />
+    <svg class="bear-watermark-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
       <!-- ears -->
-      <circle cx="58" cy="58" r="24" />
-      <circle cx="142" cy="58" r="24" />
-      <circle class="bear-wm-soft" cx="58" cy="58" r="12" />
-      <circle class="bear-wm-soft" cx="142" cy="58" r="12" />
+      <circle cx="48" cy="52" r="28" />
+      <circle cx="152" cy="52" r="28" />
+      <circle class="bear-wm-soft" cx="48" cy="52" r="14" />
+      <circle class="bear-wm-soft" cx="152" cy="52" r="14" />
       <!-- head -->
-      <circle cx="100" cy="88" r="48" />
+      <circle cx="100" cy="108" r="62" />
       <!-- angry brows -->
-      <path class="bear-wm-line" d="M68 78 L92 88" />
-      <path class="bear-wm-line" d="M132 78 L108 88" />
-      <!-- eyes -->
-      <circle class="bear-wm-fill" cx="82" cy="94" r="5.5" />
-      <circle class="bear-wm-fill" cx="118" cy="94" r="5.5" />
+      <path class="bear-wm-line" d="M58 88 L92 102" />
+      <path class="bear-wm-line" d="M142 88 L108 102" />
+      <!-- red robot eyes -->
+      <rect class="bear-wm-eye-socket" x="66" y="100" width="28" height="18" rx="3" />
+      <rect class="bear-wm-eye-socket" x="106" y="100" width="28" height="18" rx="3" />
+      <rect class="bear-wm-eye-glow" x="70" y="104" width="20" height="10" rx="1.5" />
+      <rect class="bear-wm-eye-glow" x="110" y="104" width="20" height="10" rx="1.5" />
+      <line class="bear-wm-eye-slit" x1="72" y1="109" x2="88" y2="109" />
+      <line class="bear-wm-eye-slit" x1="112" y1="109" x2="128" y2="109" />
       <!-- snout -->
-      <ellipse class="bear-wm-soft" cx="100" cy="112" rx="20" ry="15" />
+      <ellipse class="bear-wm-soft" cx="100" cy="138" rx="26" ry="18" />
       <!-- nose -->
-      <ellipse class="bear-wm-fill" cx="100" cy="108" rx="7" ry="5.5" />
+      <ellipse class="bear-wm-fill" cx="100" cy="132" rx="9" ry="7" />
       <!-- frown -->
-      <path class="bear-wm-line" d="M86 122 Q100 114 114 122" />
+      <path class="bear-wm-line" d="M82 150 Q100 140 118 150" />
     </svg>
   </div>
 
