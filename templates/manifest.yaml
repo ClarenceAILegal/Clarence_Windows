@@ -114,3 +114,35 @@ templates:
   - prayer_for_relief
   - relief_sought
   - state
+- id: fl-motion-for-continuance
+  name: FL Motion for Continuance of Trial
+  path: lexis/fl-motion-for-continuance.docx
+  source: lexis
+  description: LexisNexis Motion for Continuance (FL), Rule 3.190(f). Converted from
+    user download.
+  jurisdiction: FL
+  motion_type: continuance
+  placeholders:
+  - additional_grounds
+  - case_number
+  - certificate_of_service
+  - charging_date
+  - counsel_address
+  - counsel_bar
+  - counsel_email
+  - counsel_firm
+  - counsel_name
+  - counsel_phone
+  - county
+  - court_division
+  - court_level
+  - current_trial_date
+  - defendant_name
+  - factual_background
+  - filing_date
+  - judicial_circuit
+  - motion_title
+  - prayer_for_relief
+  - requested_continuance_date
+  - service_date
+  notes: Original PDF/DOCX archived in templates/lexis/sources/.

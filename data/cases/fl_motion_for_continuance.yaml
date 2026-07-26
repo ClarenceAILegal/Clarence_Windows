@@ -1,0 +1,43 @@
+template_id: fl-motion-for-continuance
+motion_title: Motion for Continuance of Trial
+caption:
+  court_name: IN THE CIRCUIT COURT OF THE NINTH JUDICIAL CIRCUIT
+  court_division: Criminal
+  county: Orange
+  state: Florida
+  case_number: "2026-CF-001234-A-O"
+  judge: Hon. Example Judge
+  plaintiff: State of Florida
+  defendant: Jordan Smith
+movant:
+  name: Jordan Smith
+  role: Defendant
+  counsel: Alex Counsel, Esq.
+  bar_number: "123456"
+  firm: Counsel & Associates, P.A.
+  address: "100 Orange Avenue, Suite 400, Orlando, FL 32801"
+  phone: "(407) 555-0100"
+  email: alex@counsel.example
+filing_date: "July 25, 2026"
+certificate_of_service: >
+  Counsel further certifies compliance with all applicable e-service requirements.
+factual_background: >
+  This case is set for trial on August 18, 2026. Undersigned counsel was retained on
+  July 10, 2026, and has not yet completed investigation, discovery review, or
+  preparation of necessary pretrial motions. A short continuance is required so that
+  counsel may provide effective assistance.
+prayer_for_relief: >
+  Defendant further requests such other and further relief as this Court deems just
+  and proper.
+custom:
+  court_level: CIRCUIT
+  judicial_circuit: "NINTH"
+  defendant_name: Jordan Smith
+  charging_date: May 20, 2026
+  current_trial_date: August 18, 2026
+  requested_continuance_date: a date not earlier than October 20, 2026
+  additional_grounds: >
+    Undersigned counsel is also scheduled for trial in an unrelated matter during the
+    currently set trial week and cannot provide effective representation in both cases
+    as presently calendared.
+  service_date: July 25, 2026
