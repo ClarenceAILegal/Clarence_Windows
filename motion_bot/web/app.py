@@ -151,16 +151,21 @@ async def home(
     # Play water-ripple intro once after successful login
     play_intro = consume_intro_flag(request)
     query = (q or "").strip()
-    mode = (mode or "search").strip().lower()
-    if mode not in ("search", "generate"):
-        mode = "search"
+    mode = (mode or "chat").strip().lower()
+    if mode not in ("chat", "search", "generate"):
+        mode = "chat"
     forced_tid = (template_id or "").strip()
 
-    parsed = parse_user_query(query, force_intent=mode if query else None) if query else None
+    # Chat / free-text: extract fields for matching; don't force generate from verbs alone
+    parsed = (
+        parse_user_query(query, force_intent="search" if mode == "chat" else mode)
+        if query
+        else None
+    )
     search_q = parsed.search_text if parsed else ""
     results = search_templates(search_q) if search_q else []
 
-    # One-shot / generate path: fill from free text + chosen/best template, download
+    # One-shot generate (after user chooses in chat)
     if query and mode == "generate":
         best_entry = None
         if forced_tid:
@@ -181,9 +186,10 @@ async def home(
                     mode="generate",
                     generate_error=(
                         "No matching template in your library for that request. "
-                        "Drop a .docx on the search bar to add one, then try Generate again."
+                        "Drop a .docx on the search bar to add one, then ask again."
                     ),
                     extracted={},
+                    show_chat=True,
                 ),
             )
         try:
@@ -200,6 +206,7 @@ async def home(
                     mode="generate",
                     generate_error=f"Could not generate: {exc}",
                     extracted=parsed.fields if parsed else {},
+                    show_chat=True,
                 ),
                 status_code=400,
             )
@@ -221,6 +228,9 @@ async def home(
             mode=mode,
             generate_error=None,
             extracted=extracted,
+            show_chat=bool(query),
+            best_template_id=results[0][0].id if results else "",
+            best_template_name=results[0][0].name if results else "",
         ),
     )
 
