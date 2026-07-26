@@ -143,14 +143,3 @@ templates:
   - requested_continuance_date
   - service_date
   notes: Original PDF/DOCX archived in templates/library/sources/.
-- id: clarence-test-upload
-  name: Test Upload Motion
-  path: library/clarence-test-upload.docx
-  source: library
-  description: user upload test
-  jurisdiction: ''
-  motion_type: ''
-  placeholders:
-  - case_number
-  notes: Uploaded template automatically added to the library. Use Jinja placeholders
-    like {{ case_number }} before generating.
