@@ -18,16 +18,34 @@
 
   <div class="app-shell">
     <header class="top-bar">
-      <a class="logo" href="/home">Motion Bot</a>
-      <nav class="nav-links">
-        <a href="/home">Search</a>
-        <a href="/library">Library</a>
-        <a href="/generate">Generate</a>
-        <a href="/upload">Upload</a>
-        <form method="post" action="/logout" style="display:inline;margin:0;">
-          <button class="linkish" type="submit">Log out</button>
-        </form>
-      </nav>
+      <div class="brand-stack">
+        <a class="logo" href="/home">Motion Bot</a>
+        <button
+          type="button"
+          class="menu-toggle"
+          id="menu-toggle"
+          aria-label="Open menu"
+          aria-expanded="false"
+          aria-controls="site-menu"
+        >
+          <span class="menu-toggle-lines" aria-hidden="true">
+            <span class="menu-line"></span>
+            <span class="menu-line"></span>
+            <span class="menu-line"></span>
+          </span>
+        </button>
+        <nav class="site-menu" id="site-menu" aria-label="Main">
+          <div class="site-menu-inner">
+            <a class="menu-item" href="/home" style="--i:0">Search</a>
+            <a class="menu-item" href="/library" style="--i:1">Library</a>
+            <a class="menu-item" href="/generate" style="--i:2">Generate</a>
+            <a class="menu-item" href="/upload" style="--i:3">Upload</a>
+            <form class="menu-item menu-logout" method="post" action="/logout" style="--i:4">
+              <button class="linkish" type="submit">Log out</button>
+            </form>
+          </div>
+        </nav>
+      </div>
     </header>
 
     {% for f in flashes %}
@@ -43,6 +61,30 @@
   <script src="/static/ripples.js"></script>
   <script>
     (function () {
+      // Collapsible vertical menu under logo
+      const toggle = document.getElementById("menu-toggle");
+      const menu = document.getElementById("site-menu");
+      if (toggle && menu) {
+        function setOpen(open) {
+          toggle.classList.toggle("is-open", open);
+          menu.classList.toggle("is-open", open);
+          toggle.setAttribute("aria-expanded", open ? "true" : "false");
+          toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+        }
+        toggle.addEventListener("click", function (e) {
+          e.stopPropagation();
+          setOpen(!menu.classList.contains("is-open"));
+        });
+        document.addEventListener("click", function (e) {
+          if (!menu.classList.contains("is-open")) return;
+          if (toggle.contains(e.target) || menu.contains(e.target)) return;
+          setOpen(false);
+        });
+        document.addEventListener("keydown", function (e) {
+          if (e.key === "Escape") setOpen(false);
+        });
+      }
+
       // Undulating graphene lattice (auth-gated shell only)
       if (window.MotionBotLattice) {
         window.MotionBotLattice.start(document.getElementById("graphene-lattice"));
