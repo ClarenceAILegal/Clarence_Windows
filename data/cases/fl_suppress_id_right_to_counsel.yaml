@@ -1,0 +1,62 @@
+template_id: fl-8-08-suppress-id-right-to-counsel
+motion_title: Motion to Suppress Eyewitness Identification
+caption:
+  court_name: IN THE CIRCUIT COURT OF THE NINTH JUDICIAL CIRCUIT
+  court_division: Criminal
+  county: Orange
+  state: Florida
+  case_number: "2026-CF-001234-A-O"
+  judge: Hon. Example Judge
+  plaintiff: State of Florida
+  defendant: Jordan Smith
+movant:
+  name: Jordan Smith
+  role: Defendant
+  counsel: Alex Counsel, Esq.
+  bar_number: "123456"
+  firm: Counsel & Associates, P.A.
+  address: "100 Orange Avenue, Suite 400, Orlando, FL 32801"
+  phone: "(407) 555-0100"
+  email: alex@counsel.example
+filing_date: "July 25, 2026"
+certificate_of_service: >
+  I certify that on July 25, 2026, a true and correct copy of this Motion was
+  served on the Office of the State Attorney via the Florida Courts E-Filing Portal.
+custom:
+  judicial_circuit: "NINTH"
+  defendant_name: Jordan Smith
+  eyewitness_name: Richard Roe
+  officer_name: John Smith
+  identification_date: June 2, 2026
+  identification_place: the Orange County Jail
+  charged_offense: robbery
+  suppression_relief: >
+    the testimony of Richard Roe and Officer John Smith relating to any
+    out-of-court identification made of the Defendant by Roe, and any testimony
+    at trial by Roe identifying the Defendant as the perpetrator of the robbery
+    committed on May 15, 2026
+factual_background: >
+  On May 15, 2026, at approximately 9:30 p.m., Witness Richard Roe reported to
+  the Orlando Police Department that he had been robbed at approximately 9:00 p.m.
+  that evening. He stated that the robbery was committed by a white male who was
+  approximately 6'1" and weighed approximately 200 lbs. and who had long brown
+  hair and a full beard. The Orlando Police Department subsequently arrested the
+  Defendant on May 20, 2026, for a different robbery. The Defendant is 5'11",
+  weighs 190 lbs., and has long hair and a full beard. On May 21, 2026, the
+  Defendant was taken before a judicial officer for a first appearance. The next
+  day, on May 22, 2026, the Defendant was forced to participate in a lineup,
+  consisting of five other persons, for the purpose of determining whether Roe
+  could identify the Defendant as the perpetrator of the robbery committed on
+  May 15, 2026. The Defendant was not represented by an attorney at the time of
+  this lineup.
+legal_argument: >
+  Once adversary judicial criminal proceedings have commenced, the accused is
+  entitled to counsel at any corporeal identification procedure. The lineup here
+  occurred after first appearance and without counsel present, in violation of the
+  Sixth and Fourteenth Amendments, Article I, Section 16 of the Florida
+  Constitution, and Rules 3.130 and 3.111(a), Florida Rules of Criminal Procedure.
+  Evidence of the out-of-court identification, and any in-court identification
+  tainted thereby, must be suppressed.
+prayer_for_relief: >
+  Defendant further requests such other and further relief as this Court deems
+  just and proper.

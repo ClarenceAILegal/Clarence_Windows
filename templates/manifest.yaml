@@ -1,11 +1,90 @@
 templates:
+- id: fl-8-08-suppress-id-right-to-counsel
+  name: FL 8.08 Motion to Suppress Eyewitness ID — Right to Counsel
+  path: lexis/fl-8-08-suppress-id-right-to-counsel.docx
+  source: lexis
+  description: LexisNexis FORM 68710-8.08 (Florida). Suppress ID after post-charging
+    lineup without counsel.
+  jurisdiction: FL
+  motion_type: suppress-eyewitness-id-right-to-counsel
+  notes: Converted from user PDF download. Original in templates/lexis/sources/.
+  placeholders:
+  - case_number
+  - certificate_of_service
+  - charged_offense
+  - counsel_address
+  - counsel_bar
+  - counsel_email
+  - counsel_firm
+  - counsel_name
+  - counsel_phone
+  - county
+  - court_division
+  - defendant_name
+  - eyewitness_name
+  - factual_background
+  - filing_date
+  - identification_date
+  - identification_place
+  - judicial_circuit
+  - legal_argument
+  - motion_title
+  - officer_name
+  - prayer_for_relief
+  - suppression_relief
+- id: fl-8-09-suppress-id-suggestive
+  name: FL 8.09 Motion to Suppress Eyewitness ID — Suggestive Procedures
+  path: lexis/fl-8-09-suppress-id-suggestive.docx
+  source: lexis
+  description: LexisNexis FORM 68710-8.09 (Florida). Suppress ID based on unnecessarily
+    suggestive procedures.
+  jurisdiction: FL
+  motion_type: suppress-eyewitness-id-suggestive
+  notes: Converted from user PDF download. Original in templates/lexis/sources/.
+  placeholders:
+  - case_number
+  - certificate_of_service
+  - charged_offense
+  - counsel_address
+  - counsel_bar
+  - counsel_email
+  - counsel_firm
+  - counsel_name
+  - counsel_phone
+  - county
+  - court_division
+  - defendant_name
+  - eyewitness_name
+  - factual_background
+  - filing_date
+  - identification_date
+  - identification_medium
+  - identification_place
+  - judicial_circuit
+  - legal_argument
+  - motion_title
+  - officer_name
+  - prayer_for_relief
+  - suggestive_procedure
+  - suppression_relief
+- id: fl-8-06-jury-instruction-eyewitness-id
+  name: FL 8.06 Jury Instruction 3.9(c) — Eyewitness Identification (reference)
+  path: lexis/fl-8-06-jury-instruction-eyewitness-id.docx
+  source: lexis
+  description: LexisNexis FORM 68710-8.06. Reference jury instruction, not a motion
+    form.
+  jurisdiction: FL
+  motion_type: jury-instruction-reference
+  notes: Reference only. Full PDF in templates/lexis/sources/.
+  placeholders: []
 - id: sample-motion-to-compel
   name: Sample Motion To Compel
   path: sample/sample-motion-to-compel.docx
   source: sample
-  description: Auto-discovered sample template
+  description: Built-in sample civil motion template
   jurisdiction: ''
-  motion_type: ''
+  motion_type: compel
+  notes: ''
   placeholders:
   - case_number
   - certificate_of_service
@@ -35,4 +114,3 @@ templates:
   - prayer_for_relief
   - relief_sought
   - state
-  notes: ''

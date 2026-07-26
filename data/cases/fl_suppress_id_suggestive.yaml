@@ -1,0 +1,61 @@
+template_id: fl-8-09-suppress-id-suggestive
+motion_title: Motion to Suppress Eyewitness Identification
+caption:
+  court_name: IN THE CIRCUIT COURT OF THE NINTH JUDICIAL CIRCUIT
+  court_division: Criminal
+  county: Orange
+  state: Florida
+  case_number: "2026-CF-001234-A-O"
+  judge: Hon. Example Judge
+  plaintiff: State of Florida
+  defendant: Jordan Smith
+movant:
+  name: Jordan Smith
+  role: Defendant
+  counsel: Alex Counsel, Esq.
+  bar_number: "123456"
+  firm: Counsel & Associates, P.A.
+  address: "100 Orange Avenue, Suite 400, Orlando, FL 32801"
+  phone: "(407) 555-0100"
+  email: alex@counsel.example
+filing_date: "July 25, 2026"
+certificate_of_service: >
+  I certify that on July 25, 2026, a true and correct copy of this Motion was
+  served on the Office of the State Attorney via the Florida Courts E-Filing Portal.
+custom:
+  judicial_circuit: "NINTH"
+  defendant_name: Jordan Smith
+  eyewitness_name: Richard Roe
+  officer_name: John Smith
+  identification_date: May 28, 2026
+  identification_place: the Orlando Police Department
+  charged_offense: robbery
+  identification_medium: a single mug-shot photograph of the Defendant
+  suggestive_procedure: single photograph identification procedure
+  suppression_relief: >
+    any testimony by Richard Roe and Officer John Smith concerning the
+    extra-judicial identification and any in-court testimony by Roe identifying
+    the Defendant as the perpetrator of the crime
+factual_background: >
+  On May 15, 2026, at approximately 9:30 p.m., Richard Roe reported to the
+  Orlando Police Department that he had been robbed at approximately 9:00 p.m.
+  that evening. He stated that the robbery was committed by a white male who was
+  approximately 6'1" tall and weighed approximately 200 lbs., and who had long
+  brown hair and a full beard. The Defendant is approximately 5'11" tall, weighs
+  approximately 190 lbs., and has long hair and a full beard. The Orlando Police
+  Department had previously arrested the Defendant on May 10, 2026 for a different
+  robbery, and had obtained a mug-shot photograph of him at that time. On May 28,
+  2026, Officer Smith secured that mug shot of the Defendant and showed it to Roe
+  for the purpose of determining whether Roe could identify the Defendant as the
+  perpetrator of the Roe robbery. No other photograph was shown to Roe, and Roe
+  identified the Defendant as the person who committed the robbery.
+legal_argument: >
+  An identification procedure is impermissibly suggestive when police use a
+  single-photograph show-up that improperly focuses suspicion on the accused.
+  The procedure used here was unnecessarily suggestive and created a substantial
+  likelihood of irreparable misidentification. Both the out-of-court identification
+  and any tainted in-court identification must be suppressed under the Fourteenth
+  Amendment and Article I, Section 16 of the Florida Constitution.
+prayer_for_relief: >
+  Defendant further requests such other and further relief as this Court deems
+  just and proper.
