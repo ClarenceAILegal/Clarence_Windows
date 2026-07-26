@@ -1,0 +1,38 @@
+templates:
+- id: sample-motion-to-compel
+  name: Sample Motion To Compel
+  path: sample/sample-motion-to-compel.docx
+  source: sample
+  description: Auto-discovered sample template
+  jurisdiction: ''
+  motion_type: ''
+  placeholders:
+  - case_number
+  - certificate_of_service
+  - counsel_address
+  - counsel_bar
+  - counsel_email
+  - counsel_firm
+  - counsel_name
+  - counsel_phone
+  - county
+  - court_division
+  - court_name
+  - defendant
+  - exhibit
+  - exhibits
+  - factual_background
+  - filing_date
+  - hearing_date
+  - hearing_location
+  - hearing_time
+  - judge
+  - legal_argument
+  - motion_title
+  - movant_name
+  - movant_role
+  - plaintiff
+  - prayer_for_relief
+  - relief_sought
+  - state
+  notes: ''
