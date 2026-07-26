@@ -91,17 +91,16 @@
             <input
               id="motion-query"
               class="search-input"
-              type="search"
+              type="text"
               name="q"
               value=""
               placeholder="{% if show_chat and query %}Add more detail or ask for another motion…{% else %}Describe the motion — case no., parties, facts… or drop a .docx{% endif %}"
               autofocus
               autocomplete="off"
               spellcheck="false"
-              required
             />
           </div>
-          <button class="send-arrow" type="submit" aria-label="Send">
+          <button class="send-arrow" type="submit" id="send-btn" aria-label="Send">
             <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false">
               <path d="M12 19V5M12 5l-6 6M12 5l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -163,6 +162,31 @@
   var input = document.getElementById("motion-query");
   var statusEl = document.getElementById("search-status");
   if (!form || !field || !input) return;
+
+  // Always navigate explicitly — more reliable than native GET in some WebKit cases
+  function sendQuery() {
+    var q = (input.value || "").trim();
+    if (!q) {
+      setStatus("Type a motion request first.", "error");
+      input.focus();
+      return false;
+    }
+    form.classList.remove("is-uploading");
+    window.location.href = "/home?q=" + encodeURIComponent(q);
+    return false;
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    sendQuery();
+  });
+
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendQuery();
+    }
+  });
 
   var dragDepth = 0;
 

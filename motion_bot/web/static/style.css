@@ -502,7 +502,6 @@ body.app-page::after {
 
 .search-form.is-uploading {
   opacity: 0.88;
-  pointer-events: none;
 }
 
 /* Chat-style send: simple up arrow */
