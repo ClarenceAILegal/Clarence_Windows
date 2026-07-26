@@ -504,6 +504,15 @@ body.app-page::after {
   opacity: 0.88;
 }
 
+/* When Clarence asks for a template upload, highlight the drop target */
+.search-form.needs-upload .search-input {
+  border-color: rgba(166, 61, 61, 0.45);
+  border-style: dashed;
+  box-shadow:
+    0 0 0 3px rgba(201, 76, 76, 0.1),
+    0 10px 40px rgba(166, 61, 61, 0.1);
+}
+
 /* Chat-style send: simple up arrow */
 .send-arrow {
   flex: 0 0 auto;

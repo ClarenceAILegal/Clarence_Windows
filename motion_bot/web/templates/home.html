@@ -33,6 +33,13 @@
             <div class="chat-reply" id="chat-reply">
               {% if generate_error %}
                 <p>{{ generate_error }}</p>
+                {% if not results %}
+                <p>
+                  Would you like to <strong>upload a template</strong> for this motion?
+                  If so, drop a Word file (.docx) on the bar below — I’ll add it to your library automatically,
+                  then you can send this request again.
+                </p>
+                {% endif %}
               {% elif results %}
                 <p>
                   Got it. I found
@@ -67,8 +74,12 @@
                 {% endif %}
               {% else %}
                 <p>
-                  I don’t have a matching motion template for that yet.
-                  Drop a .docx on the bar below to add it to your library, then send your request again.
+                  I don’t have a matching motion template in your library for that request.
+                </p>
+                <p>
+                  <strong>Would you like to upload a template?</strong>
+                  Drop a Word document (.docx) onto the bar below and I’ll add it to your library automatically.
+                  Then send your request again and we can generate or fill the form.
                 </p>
               {% endif %}
             </div>
@@ -78,14 +89,14 @@
       {% endif %}
 
       <form
-        class="search-form search-form-composer"
+        class="search-form search-form-composer{% if show_chat and query and not results %} needs-upload{% endif %}"
         id="search-form"
         method="get"
         action="/home"
         role="search"
         data-query="{{ query }}"
       >
-        <label class="hero-sub" for="motion-query">{% if show_chat and query %}Anything else?{% else %}What motion do you need?{% endif %}</label>
+        <label class="hero-sub" for="motion-query">{% if show_chat and query and not results %}Drop a .docx template here, or type another request{% elif show_chat and query %}Anything else?{% else %}What motion do you need?{% endif %}</label>
         <div class="composer-row">
           <div class="search-field" id="search-field">
             <input

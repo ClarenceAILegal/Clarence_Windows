@@ -185,11 +185,13 @@ async def home(
                     play_intro=play_intro,
                     mode="generate",
                     generate_error=(
-                        "No matching template in your library for that request. "
-                        "Drop a .docx on the search bar to add one, then ask again."
+                        "I couldn’t generate that yet because there’s no matching "
+                        "template in your library."
                     ),
                     extracted={},
                     show_chat=True,
+                    best_template_id="",
+                    best_template_name="",
                 ),
             )
         try:
