@@ -1,1 +1,1 @@
-"""Password-protected web UI for Motion Bot."""
+"""Password-protected web UI for Clarence."""

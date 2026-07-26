@@ -1,4 +1,4 @@
-"""FastAPI app: private Motion Bot website."""
+"""FastAPI app: private Clarence website."""
 
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ STATIC_DIR = WEB_DIR / "static"
 
 SAFE_ID_RE = re.compile(r"[^a-zA-Z0-9._-]+")
 
-app = FastAPI(title="Motion Bot", version=__version__, docs_url=None, redoc_url=None)
+app = FastAPI(title="Clarence", version=__version__, docs_url=None, redoc_url=None)
 app.add_middleware(
     SessionMiddleware,
     secret_key=get_session_secret(),

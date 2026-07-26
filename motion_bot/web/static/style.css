@@ -1,17 +1,17 @@
-/* ===== Login: solid blue + Windows 95 ===== */
+/* ===== Login: solid medium red + Windows 95 ===== */
 :root {
-  --win-blue: #000080;
+  --win-red: #b33a3a;
   --win-face: #c0c0c0;
   --win-dark: #808080;
   --win-darker: #404040;
   --win-light: #ffffff;
   --win-text: #000000;
-  --win-title: #000080;
-  --future-ink: #0a1628;
-  --future-muted: #4a6280;
-  --future-accent: #00b4d8;
-  --future-accent-2: #0077b6;
-  --future-glow: rgba(0, 180, 216, 0.35);
+  --win-title: #8f2f2f;
+  --future-ink: #1c1012;
+  --future-muted: #7a5a5e;
+  --future-accent: #c94c4c;
+  --future-accent-2: #a63d3d;
+  --future-glow: rgba(185, 58, 58, 0.32);
   --font-win: "MS Sans Serif", "Segoe UI", Tahoma, sans-serif;
   --font-future: "Orbitron", "Segoe UI", system-ui, sans-serif;
   --font-body: "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -26,7 +26,7 @@ html, body {
 
 /* ---------- LOGIN SHELL ---------- */
 body.login-page {
-  background: var(--win-blue);
+  background: var(--win-red);
   font-family: var(--font-win);
   color: var(--win-light);
   min-height: 100vh;
@@ -45,7 +45,7 @@ body.login-page {
   gap: 8px;
   font-size: 16px;
   color: #ffffff;
-  text-shadow: 1px 1px 0 #000040;
+  text-shadow: 1px 1px 0 #6e2020;
 }
 
 .login-center label {
@@ -110,12 +110,12 @@ body.login-page {
 }
 
 .login-fade-out {
-  animation: blueFade 1.4s ease-in forwards;
+  animation: redFade 1.4s ease-in forwards;
 }
-@keyframes blueFade {
+@keyframes redFade {
   0% { filter: none; }
-  40% { filter: brightness(1.3) saturate(1.2); }
-  100% { filter: brightness(2.2) saturate(0.3); opacity: 0; }
+  40% { filter: brightness(1.25) saturate(1.15); }
+  100% { filter: brightness(2.1) saturate(0.35); opacity: 0; }
 }
 
 /* ---------- FUTURISTIC APP ---------- */
@@ -189,12 +189,12 @@ body.app-page::after {
   text-transform: uppercase;
   color: var(--future-ink);
   text-decoration: none;
-  background: linear-gradient(120deg, #031525 0%, #0077b6 45%, #00b4d8 100%);
+  background: linear-gradient(120deg, #2a0c0e 0%, #a63d3d 45%, #c94c4c 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0 0 30px var(--future-glow);
-  filter: drop-shadow(0 0 12px rgba(0, 180, 216, 0.25));
+  filter: drop-shadow(0 0 12px rgba(185, 58, 58, 0.28));
   line-height: 1.1;
 }
 
@@ -215,10 +215,10 @@ body.app-page::after {
   transition: background 0.25s ease, transform 0.25s ease;
 }
 .menu-toggle:hover {
-  background: rgba(0, 119, 182, 0.06);
+  background: rgba(185, 58, 58, 0.08);
 }
 .menu-toggle:focus-visible {
-  outline: 2px solid rgba(0, 180, 216, 0.45);
+  outline: 2px solid rgba(201, 76, 76, 0.45);
   outline-offset: 3px;
 }
 
@@ -236,7 +236,7 @@ body.app-page::after {
   height: 1.5px;
   width: 100%;
   border-radius: 2px;
-  background: linear-gradient(90deg, #0a1628 0%, #0077b6 70%, #00b4d8 100%);
+  background: linear-gradient(90deg, #1c1012 0%, #a63d3d 70%, #c94c4c 100%);
   transform-origin: center;
   transition:
     transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
@@ -371,13 +371,13 @@ body.app-page::after {
 .search-form input[type="search"],
 .search-form input[type="text"] {
   flex: 1;
-  border: 1px solid rgba(0, 119, 182, 0.25);
+  border: 1px solid rgba(166, 61, 61, 0.25);
   border-radius: 999px;
   padding: 1rem 1.35rem;
   font-size: 1.05rem;
   background: rgba(255, 255, 255, 0.86);
   box-shadow:
-    0 10px 40px rgba(0, 119, 182, 0.12),
+    0 10px 40px rgba(166, 61, 61, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   color: var(--future-ink);
   outline: none;
@@ -386,8 +386,8 @@ body.app-page::after {
 .search-form input:focus {
   border-color: var(--future-accent);
   box-shadow:
-    0 0 0 4px rgba(0, 180, 216, 0.15),
-    0 12px 40px rgba(0, 119, 182, 0.16);
+    0 0 0 4px rgba(201, 76, 76, 0.15),
+    0 12px 40px rgba(166, 61, 61, 0.16);
 }
 
 .search-form button {
@@ -400,9 +400,9 @@ body.app-page::after {
   text-transform: uppercase;
   font-size: 0.8rem;
   color: #fff;
-  background: linear-gradient(135deg, #0077b6, #00b4d8);
+  background: linear-gradient(135deg, #a63d3d, #c94c4c);
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(0, 119, 182, 0.28);
+  box-shadow: 0 8px 24px rgba(166, 61, 61, 0.28);
 }
 .search-form button:hover {
   filter: brightness(1.06);
@@ -416,7 +416,7 @@ body.app-page::after {
 
 .result-card {
   background: rgba(255, 255, 255, 0.82);
-  border: 1px solid rgba(0, 119, 182, 0.14);
+  border: 1px solid rgba(166, 61, 61, 0.14);
   border-radius: 16px;
   padding: 1rem 1.15rem;
   margin-bottom: 0.75rem;
@@ -446,7 +446,7 @@ body.app-page::after {
 }
 .badge {
   font-size: 0.72rem;
-  border: 1px solid rgba(0, 119, 182, 0.25);
+  border: 1px solid rgba(166, 61, 61, 0.25);
   color: var(--future-accent-2);
   border-radius: 999px;
   padding: 0.15rem 0.5rem;
@@ -474,12 +474,12 @@ body.app-page::after {
 }
 .btn.primary {
   color: #fff;
-  background: linear-gradient(135deg, #0077b6, #00b4d8);
+  background: linear-gradient(135deg, #a63d3d, #c94c4c);
 }
 .btn.ghost {
   color: var(--future-accent-2);
   background: transparent;
-  border: 1px solid rgba(0, 119, 182, 0.3);
+  border: 1px solid rgba(166, 61, 61, 0.3);
 }
 .btn:hover { text-decoration: none; filter: brightness(1.04); }
 
@@ -492,7 +492,7 @@ body.app-page::after {
 
 .card {
   background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(0, 119, 182, 0.14);
+  border: 1px solid rgba(166, 61, 61, 0.14);
   border-radius: 16px;
   padding: 1.25rem 1.4rem;
   box-shadow: 0 10px 30px rgba(10, 40, 70, 0.06);
@@ -512,7 +512,7 @@ h2 { font-size: 1.1rem; margin: 0 0 0.75rem; }
   width: min(980px, calc(100% - 2rem));
   position: relative;
   z-index: 2;
-  border: 1px solid rgba(0, 119, 182, 0.15);
+  border: 1px solid rgba(166, 61, 61, 0.15);
   background: rgba(255,255,255,0.9);
 }
 .flash.success { border-color: rgba(16, 185, 129, 0.35); }
@@ -534,7 +534,7 @@ select,
 textarea {
   width: 100%;
   background: #fff;
-  border: 1px solid rgba(0, 119, 182, 0.22);
+  border: 1px solid rgba(166, 61, 61, 0.22);
   color: var(--future-ink);
   border-radius: 10px;
   padding: 0.65rem 0.75rem;
@@ -561,7 +561,7 @@ textarea { min-height: 110px; resize: vertical; }
 .table th, .table td {
   text-align: left;
   padding: 0.7rem 0.45rem;
-  border-bottom: 1px solid rgba(0, 119, 182, 0.12);
+  border-bottom: 1px solid rgba(166, 61, 61, 0.12);
   vertical-align: top;
 }
 .table th { color: var(--future-muted); font-size: 0.82rem; }
@@ -571,8 +571,8 @@ textarea { min-height: 110px; resize: vertical; }
 .chip {
   font-family: ui-monospace, Menlo, monospace;
   font-size: 0.75rem;
-  background: rgba(0, 180, 216, 0.08);
-  border: 1px solid rgba(0, 119, 182, 0.18);
+  background: rgba(201, 76, 76, 0.08);
+  border: 1px solid rgba(166, 61, 61, 0.18);
   border-radius: 6px;
   padding: 0.15rem 0.4rem;
 }
@@ -598,7 +598,7 @@ textarea { min-height: 110px; resize: vertical; }
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: #000080;
+  background: #b33a3a;
   pointer-events: none;
   animation: veilLift 1.6s ease-out forwards;
 }

@@ -1,6 +1,6 @@
-# Motion Bot
+# Clarence
 
-Generate court **motions as Word documents (`.docx`)** from local templates filled with case-specific facts.
+Private motion-drafting site (project package: Motion Bot). Generate court **motions as Word documents (`.docx`)** from local templates filled with case-specific facts.
 
 ## What it does
 
@@ -21,7 +21,7 @@ pip install -e .
 
 ## Private website (password-protected)
 
-Windows 95–style solid blue login → water-ripple transition → futuristic white search UI.
+Windows 95–style solid medium-red login → water-ripple transition → futuristic white search UI branded **Clarence**.
 
 ```bash
 motion-bot serve
@@ -36,7 +36,7 @@ motion-bot serve
 
 | Page | Purpose |
 |------|---------|
-| `/login` | Solid blue Win95-style password gate |
+| `/login` | Solid medium-red Win95-style password gate |
 | `/home` | Futuristic motion search by description |
 | `/library` | Full template list + recent downloads |
 | `/generate` | Fill fields and generate a motion `.docx` |

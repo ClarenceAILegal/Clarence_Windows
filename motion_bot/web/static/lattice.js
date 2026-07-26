@@ -127,7 +127,7 @@
             if (vis < 0.03) continue;
 
             const alpha = 0.08 + vis * 0.32;
-            ctx.strokeStyle = "rgba(90, 125, 165, " + alpha + ")";
+            ctx.strokeStyle = "rgba(150, 90, 95, " + alpha + ")";
             ctx.beginPath();
             ctx.moveTo(sa.x, sa.y);
             ctx.lineTo(sb.x, sb.y);

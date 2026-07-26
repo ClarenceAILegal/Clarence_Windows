@@ -179,7 +179,7 @@ def serve_cmd(host: str, port: int, reload: bool) -> None:
 
     active = get_site_password()
     using_default = active == DEFAULT_PASSWORD
-    click.echo(f"Motion Bot private site: http://{host}:{port}")
+    click.echo(f"Clarence private site: http://{host}:{port}")
     if using_default:
         click.echo("Site password: default (B0ts4Justice) — case-sensitive")
     else:
