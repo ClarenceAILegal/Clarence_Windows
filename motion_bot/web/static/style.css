@@ -363,10 +363,10 @@ body.app-page::after {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
-    "sub   ."
+    "sub   sub"
     "input btn";
   column-gap: var(--search-gap);
-  row-gap: 0.7rem;
+  row-gap: 0.65rem;
   width: 100%;
   margin: 0;
   padding: 0;
@@ -375,22 +375,22 @@ body.app-page::after {
   box-sizing: border-box;
 }
 
-/* Same grid cell width as the input — not under the button */
 .search-form .hero-sub {
   grid-area: sub;
   display: block;
-  width: auto;
-  max-width: none;
+  width: 100%;
   margin: 0;
-  /* Match input text inset (border 1px + horizontal padding) */
-  padding: 0 calc(var(--search-pad-x) + 1px);
+  padding: 0;
   box-sizing: border-box;
   color: var(--future-muted);
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 400;
-  line-height: 1.45;
+  line-height: 1.2;
   text-align: left;
-  letter-spacing: normal;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .search-form .search-input {
