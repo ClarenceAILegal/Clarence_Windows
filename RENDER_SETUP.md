@@ -57,9 +57,13 @@ Copy the repo URL (e.g. `https://github.com/you/clarence`).
 | Region | Oregon (or closest) |
 | Runtime | **Python 3** |
 | Branch | `main` |
-| Build Command | `pip install --upgrade pip && pip install -r requirements.txt && pip install -e .` |
+| **Root Directory** | *(leave blank)* |
+| Build Command | `pip install --upgrade pip setuptools wheel && pip install -r requirements.txt` |
 | Start Command | `uvicorn motion_bot.web.app:app --host 0.0.0.0 --port $PORT` |
 | Instance type | **Free** |
+
+**Important:** Do **not** use `pip install -e .` on Render (it often fails).  
+Use only `requirements.txt` as above.
 
 5. **Environment** (add these):
 
@@ -68,7 +72,7 @@ Copy the repo URL (e.g. `https://github.com/you/clarence`).
 | `MOTION_BOT_PASSWORD` | your strong site password |
 | `MOTION_BOT_SECRET_KEY` | paste output of `openssl rand -hex 32` |
 | `MOTION_BOT_HTTPS` | `1` |
-| `PYTHON_VERSION` | `3.12.8` |
+| `PYTHON_VERSION` | `3.11.11` |
 
 6. Click **Create Web Service** and wait until status is **Live**.
 7. Open the free URL (something like `https://clarence-xxxx.onrender.com`) and confirm the blue password page loads.
@@ -124,9 +128,14 @@ In the DNS panel where you bought **clarenceai.live**:
 
 | Symptom | Fix |
 |---------|-----|
-| Build fails | Check Render logs; ensure `requirements.txt` and `motion_bot/` are in the repo |
-| Site 502 | Wait for cold start; check start command uses `$PORT` |
+| Build fails | Open **Logs** → copy the red error. Common fix: set Build Command to `pip install --upgrade pip setuptools wheel && pip install -r requirements.txt` (no `-e .`) |
+| `No module named motion_bot` | Root Directory must be blank; repo root must contain the `motion_bot/` folder |
+| Wrong Python | Set `PYTHON_VERSION=3.11.11` and `runtime.txt` to `3.11.11` |
+| Site 502 | Wait for cold start (~1 min on free); start command must use `$PORT` |
 | Domain not working | Re-check DNS against Render’s custom domain page; wait for SSL |
 | Login cookie issues | Ensure `MOTION_BOT_HTTPS=1` and you’re on `https://` |
+
+### After fixing build settings
+Render → service → **Manual Deploy** → **Clear build cache & deploy**
 
 When GitHub login is done (`gh auth login`), say **“repo is ready”** and I can push/deploy commands from here if you want.

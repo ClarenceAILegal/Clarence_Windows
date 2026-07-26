@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: free
     region: oregon
-    buildCommand: pip install --upgrade pip && pip install -r requirements.txt && pip install -e .
+    buildCommand: pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
     startCommand: uvicorn motion_bot.web.app:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
@@ -15,4 +15,4 @@ services:
       - key: MOTION_BOT_HTTPS
         value: "1"
       - key: PYTHON_VERSION
-        value: "3.12.8"
+        value: "3.11.11"
