@@ -5,9 +5,14 @@
   <div class="card">
     <h1>Upload template</h1>
     <p class="muted">
-      Import a Word motion template (.docx). PDFs must be converted to .docx first.
-      Templates with <code>{{ '{{ field }}' }}</code> placeholders can be filled on Generate.
+      Choose a Word motion template (.docx). On upload, Clarence <strong>adds it to your library automatically</strong>
+      so you can search and generate from it right away. PDFs must be converted to .docx first.
     </p>
+    {% if suggested_query %}
+    <p class="muted">
+      Looking for: <strong>{{ suggested_query }}</strong>
+    </p>
+    {% endif %}
   </div>
 
   <div class="card">
@@ -15,34 +20,43 @@
       <div class="error-banner">{{ error }}</div>
     {% endif %}
     <form method="post" action="/upload" enctype="multipart/form-data">
+      <input type="hidden" name="next" value="{{ next_url }}" />
+      <input type="hidden" name="suggested_query" value="{{ suggested_query }}" />
+
       <label for="file">Word template (.docx)</label>
-      <input id="file" name="file" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required />
+      <input
+        id="file"
+        name="file"
+        type="file"
+        accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        required
+      />
 
       <div class="grid-2">
         <div>
           <label for="template_id">Template id (optional)</label>
-          <input id="template_id" name="template_id" type="text" placeholder="fl-motion-to-dismiss" />
+          <input id="template_id" name="template_id" type="text" placeholder="fl-motion-to-dismiss" value="{{ form_defaults.get('template_id', '') }}" />
         </div>
         <div>
           <label for="name">Display name (optional)</label>
-          <input id="name" name="name" type="text" placeholder="Motion to Dismiss" />
+          <input id="name" name="name" type="text" placeholder="Motion to Dismiss" value="{{ form_defaults.get('name', suggested_query) }}" />
         </div>
         <div>
           <label for="jurisdiction">Jurisdiction</label>
-          <input id="jurisdiction" name="jurisdiction" type="text" value="FL" />
+          <input id="jurisdiction" name="jurisdiction" type="text" value="{{ form_defaults.get('jurisdiction', 'FL') }}" />
         </div>
         <div>
           <label for="motion_type">Motion type</label>
-          <input id="motion_type" name="motion_type" type="text" placeholder="dismiss, compel, continuance…" />
+          <input id="motion_type" name="motion_type" type="text" placeholder="dismiss, compel, continuance…" value="{{ form_defaults.get('motion_type', '') }}" />
         </div>
       </div>
 
       <label for="description">Description</label>
-      <textarea id="description" name="description"></textarea>
+      <textarea id="description" name="description" placeholder="Short description for search">{{ form_defaults.get('description', suggested_query) }}</textarea>
 
       <div class="actions">
-        <button class="btn primary" type="submit">Import template</button>
-        <a class="btn ghost" href="/home">Cancel</a>
+        <button class="btn primary" type="submit">Upload to library</button>
+        <a class="btn ghost" href="{{ next_url or '/home' }}">Cancel</a>
       </div>
     </form>
   </div>

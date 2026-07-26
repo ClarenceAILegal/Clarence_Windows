@@ -9,6 +9,7 @@ import tempfile
 from datetime import date
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote
 
 import yaml
 from fastapi import FastAPI, File, Form, Request, UploadFile
@@ -352,11 +353,46 @@ async def download_file(request: Request, filename: str):
     )
 
 
+def _upload_ctx(
+    request: Request,
+    *,
+    error: Optional[str] = None,
+    suggested_query: str = "",
+    next_url: str = "/home",
+    form_defaults: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    return _base_ctx(
+        request,
+        error=error,
+        suggested_query=suggested_query or "",
+        next_url=next_url or "/home",
+        form_defaults=form_defaults or {},
+    )
+
+
 @app.get("/upload", response_class=HTMLResponse)
-async def upload_page(request: Request):
+async def upload_page(
+    request: Request,
+    q: str = "",
+    next: str = "/home",  # noqa: A002 — query param name
+):
     if not _authed(request):
         return _redirect_login()
-    return templates.TemplateResponse("upload.html", _base_ctx(request, error=None))
+    suggested = (q or "").strip()
+    # Safe internal redirect only
+    next_url = next if next.startswith("/") and not next.startswith("//") else "/home"
+    return templates.TemplateResponse(
+        "upload.html",
+        _upload_ctx(
+            request,
+            suggested_query=suggested,
+            next_url=next_url,
+            form_defaults={
+                "name": suggested,
+                "description": suggested,
+            },
+        ),
+    )
 
 
 @app.post("/upload")
@@ -368,17 +404,32 @@ async def upload_submit(
     jurisdiction: str = Form("FL"),
     motion_type: str = Form(""),
     description: str = Form(""),
+    next: str = Form("/home"),  # noqa: A002
+    suggested_query: str = Form(""),
 ):
     if not _authed(request):
         return _redirect_login()
+
+    next_url = next if next.startswith("/") and not next.startswith("//") else "/home"
+    suggested = (suggested_query or "").strip()
+    form_defaults = {
+        "template_id": template_id,
+        "name": name,
+        "jurisdiction": jurisdiction,
+        "motion_type": motion_type,
+        "description": description,
+    }
 
     filename = file.filename or ""
     if not filename.lower().endswith(".docx"):
         return templates.TemplateResponse(
             "upload.html",
-            _base_ctx(
+            _upload_ctx(
                 request,
-                error="Only .docx files are supported. Convert PDFs first or ask to convert offline.",
+                error="Only .docx files are supported. Convert PDFs to .docx first.",
+                suggested_query=suggested,
+                next_url=next_url,
+                form_defaults=form_defaults,
             ),
             status_code=400,
         )
@@ -389,26 +440,47 @@ async def upload_submit(
         shutil.copyfileobj(file.file, tmp)
 
     try:
+        # Always copy into templates/library and register in the catalog.
         entry = import_template(
             tmp_path,
             template_id=template_id.strip() or None,
             name=name.strip() or None,
-            description=description.strip()
-            or f"Uploaded via web UI from {filename}",
+            description=(
+                description.strip()
+                or suggested
+                or f"Uploaded template ({filename})"
+            ),
             jurisdiction=jurisdiction.strip(),
             motion_type=motion_type.strip(),
+            notes="Uploaded via Clarence and automatically added to the library.",
         )
     except Exception as exc:  # noqa: BLE001
         tmp_path.unlink(missing_ok=True)
         return templates.TemplateResponse(
             "upload.html",
-            _base_ctx(request, error=str(exc)),
+            _upload_ctx(
+                request,
+                error=str(exc),
+                suggested_query=suggested,
+                next_url=next_url,
+                form_defaults=form_defaults,
+            ),
             status_code=400,
         )
     finally:
         tmp_path.unlink(missing_ok=True)
 
-    _flash(request, f"Imported template '{entry.id}'.", "success")
+    _flash(
+        request,
+        f"Added to library: {entry.name}. You can search for it or generate a motion.",
+        "success",
+    )
+    # Prefer template page so user sees it was catalogued; optional return to search
+    if suggested:
+        return RedirectResponse(
+            url=f"/home?q={quote(suggested)}",
+            status_code=303,
+        )
     return RedirectResponse(url=f"/templates/{entry.id}", status_code=303)
 
 

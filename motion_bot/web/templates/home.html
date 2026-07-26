@@ -19,6 +19,13 @@
         <button class="search-submit" type="submit">Search</button>
       </form>
 
+      <div class="search-aux">
+        <a class="upload-link" href="/upload{% if query %}?q={{ query|urlencode }}{% endif %}">
+          Upload a template
+        </a>
+        <span class="search-aux-note">Adds it to your library automatically</span>
+      </div>
+
       {% if query %}
       <div class="results">
         {% if results %}
@@ -39,14 +46,23 @@
             </div>
           </article>
           {% endfor %}
+          <p class="results-footer muted">
+            Not what you need?
+            <a href="/upload?q={{ query|urlencode }}">Upload a different template</a>
+            — it will be added to the library.
+          </p>
         {% else %}
-          <div class="result-card">
+          <div class="result-card result-card-prompt">
             <div>
-              <h3>No matching motions</h3>
-              <p>Try different words, or open the full library.</p>
+              <h3>No match in your library</h3>
+              <p>
+                Nothing for “{{ query }}”. Upload a Word template (.docx) and Clarence
+                will add it to your library automatically.
+              </p>
             </div>
             <div class="result-actions">
-              <a class="btn ghost" href="/library">Library</a>
+              <a class="btn primary" href="/upload?q={{ query|urlencode }}">Upload template</a>
+              <a class="btn ghost" href="/library">Browse library</a>
             </div>
           </div>
         {% endif %}

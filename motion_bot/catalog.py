@@ -199,11 +199,14 @@ def import_template(
     jurisdiction: str = "",
     motion_type: str = "",
     notes: str = (
-        "Imported motion template. Place Jinja placeholders "
-        "like {{ case_number }} before generating."
+        "Uploaded template automatically added to the library. "
+        "Use Jinja placeholders like {{ case_number }} before generating."
     ),
 ) -> TemplateEntry:
-    """Copy a user .docx into templates/library and register it."""
+    """Copy a user .docx into templates/library and register it in the catalog.
+
+    Every successful upload is automatically added to the searchable library.
+    """
     ensure_runtime_dirs()
     source_path = Path(source_path).expanduser().resolve()
     if not source_path.exists():
@@ -212,7 +215,15 @@ def import_template(
         raise ValueError("Only .docx templates are supported. Convert .doc files first.")
 
     tid = template_id or _slugify(source_path.stem)
+    # Avoid collisions when re-uploading similar filenames without an explicit id
     dest = LIBRARY_TEMPLATES_DIR / f"{tid}.docx"
+    if dest.exists() and source_path.resolve() != dest.resolve() and not template_id:
+        n = 2
+        while (LIBRARY_TEMPLATES_DIR / f"{tid}-{n}.docx").exists():
+            n += 1
+        tid = f"{tid}-{n}"
+        dest = LIBRARY_TEMPLATES_DIR / f"{tid}.docx"
+
     if source_path.resolve() != dest.resolve():
         shutil.copy2(source_path, dest)
 
@@ -224,7 +235,7 @@ def import_template(
         "name": name or source_path.stem.replace("_", " ").title(),
         "path": str(dest.relative_to(TEMPLATES_DIR)),
         "source": "library",
-        "description": description or "Imported motion template",
+        "description": description or "Uploaded motion template",
         "jurisdiction": jurisdiction,
         "motion_type": motion_type,
         "placeholders": placeholders,
