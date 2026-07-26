@@ -27,4 +27,4 @@ motion-bot = "motion_bot.cli:main"
 include = ["motion_bot*"]
 
 [tool.setuptools.package-data]
-motion_bot = ["web/templates/*", "web/static/*", "web/static/**/*"]
+motion_bot = ["web/templates/*", "web/static/*.css", "web/static/*.js"]

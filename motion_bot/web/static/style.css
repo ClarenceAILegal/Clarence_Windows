@@ -86,36 +86,45 @@ body.login-page {
   z-index: 2;
 }
 
-/* Water ripples — completely inert until correct password (class "active") */
-#ripple-canvas {
+/* Full-page fluid undulation — idle until correct password */
+#undulate-canvas,
+.undulate-canvas-idle {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 5;
+  z-index: 1;
   pointer-events: none;
-  opacity: 0;
-  visibility: hidden;
   display: none;
-}
-#ripple-canvas.ripple-canvas-idle {
-  display: none;
-  visibility: hidden;
   opacity: 0;
 }
-#ripple-canvas.active {
+#undulate-canvas.active {
   display: block;
-  visibility: visible;
   opacity: 1;
+  z-index: 4;
 }
 
-.login-fade-out {
-  animation: redFade 1.4s ease-in forwards;
+/* Password field rides the undulation, then dissolves into the fade */
+body.login-undulating {
+  background: #b33a3a;
 }
-@keyframes redFade {
-  0% { filter: none; }
-  40% { filter: brightness(1.25) saturate(1.15); }
-  100% { filter: brightness(2.1) saturate(0.35); opacity: 0; }
+body.login-undulating .login-center {
+  z-index: 6;
+  animation: loginFloat 1.1s ease-in-out infinite, loginDissolve 2.5s ease-in forwards;
+}
+body.login-undulating .login-error {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+@keyframes loginFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+@keyframes loginDissolve {
+  0% { opacity: 1; filter: none; }
+  45% { opacity: 0.85; filter: blur(0); }
+  75% { opacity: 0.25; filter: blur(1.5px); }
+  100% { opacity: 0; filter: blur(4px); }
 }
 
 /* ---------- FUTURISTIC APP ---------- */
@@ -917,17 +926,55 @@ textarea { min-height: 110px; resize: vertical; }
   z-index: 2;
 }
 
-/* Intro overlay when arriving from login ripples */
+/* Intro overlay continues undulation theme into the main page */
 .intro-veil {
   position: fixed;
   inset: 0;
   z-index: 50;
-  background: #b33a3a;
   pointer-events: none;
-  animation: veilLift 1.6s ease-out forwards;
+  overflow: hidden;
+  background: #f7f7f7;
 }
-@keyframes veilLift {
-  0% { opacity: 1; }
-  55% { opacity: 0.55; }
-  100% { opacity: 0; visibility: hidden; }
+.intro-veil::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% 40%, rgba(179, 58, 58, 0.22), transparent 70%),
+    linear-gradient(
+      180deg,
+      rgba(179, 58, 58, 0.35) 0%,
+      rgba(255, 255, 255, 0.9) 55%,
+      rgba(255, 255, 255, 1) 100%
+    );
+  animation: veilWave 1.8s ease-out forwards;
+}
+.intro-veil::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0);
+  animation: veilWhite 1.8s ease-out forwards;
+}
+@keyframes veilWave {
+  0% {
+    transform: translateY(0) scaleY(1.05);
+    opacity: 1;
+    filter: blur(0);
+  }
+  55% {
+    transform: translateY(-2%) scaleY(1.02);
+    opacity: 0.65;
+    filter: blur(1px);
+  }
+  100% {
+    transform: translateY(-4%) scaleY(1);
+    opacity: 0;
+    filter: blur(3px);
+  }
+}
+@keyframes veilWhite {
+  0% { background: rgba(255, 255, 255, 0); }
+  40% { background: rgba(255, 255, 255, 0.15); }
+  100% { background: rgba(255, 255, 255, 0); opacity: 0; visibility: hidden; }
 }

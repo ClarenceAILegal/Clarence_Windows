@@ -113,24 +113,12 @@
         window.MotionBotLattice.start(document.getElementById("graphene-lattice"));
       }
 
-      // Optional soft ripples after password unlock (subtle; lattice is main field)
-      const canvas = document.getElementById("future-ripples");
-      if (!canvas || !window.MotionBotRipples) return;
-
       {% if play_intro %}
-      const engine = window.MotionBotRipples.create(canvas, {
-        ambient: false,
-        interactive: false,
-        waveColor: [210, 120, 120],
-        clearAlpha: 0.04,
-      });
+      // Continue fluid fade from password page; remove veil after undulation settles
       setTimeout(function () {
-        engine.splash(window.innerWidth * 0.5, window.innerHeight * 0.42, 1.0);
-      }, 200);
-      setTimeout(function () {
-        const veil = document.getElementById("intro-veil");
+        var veil = document.getElementById("intro-veil");
         if (veil) veil.remove();
-      }, 1700);
+      }, 1900);
       {% endif %}
     })();
   </script>
