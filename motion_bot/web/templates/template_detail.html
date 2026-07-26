@@ -1,17 +1,18 @@
 {% extends "base.html" %}
 {% block title %}{{ entry.name }} · Motion Bot{% endblock %}
 {% block content %}
+<div class="wrap">
   <div class="card">
     <h1>{{ entry.name }}</h1>
     <p class="muted">{{ entry.description or "No description." }}</p>
     <p>
-      {% if entry.jurisdiction %}<span class="badge fl">{{ entry.jurisdiction }}</span>{% endif %}
+      {% if entry.jurisdiction %}<span class="badge">{{ entry.jurisdiction }}</span>{% endif %}
       {% if entry.motion_type %}<span class="badge">{{ entry.motion_type }}</span>{% endif %}
       <span class="badge">{{ entry.source }}</span>
     </p>
     <div class="actions">
-      <a class="btn" href="/generate?template_id={{ entry.id }}">Generate with this template</a>
-      <a class="btn secondary" href="/dashboard">Back</a>
+      <a class="btn primary" href="/generate?template_id={{ entry.id }}">Generate with this template</a>
+      <a class="btn ghost" href="/home">Back</a>
     </div>
   </div>
 
@@ -30,4 +31,5 @@
       <p class="muted" style="margin-top:1rem;">{{ entry.notes }}</p>
     {% endif %}
   </div>
+</div>
 {% endblock %}

@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional
 
 import yaml
 from fastapi import FastAPI, File, Form, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -28,12 +28,14 @@ from motion_bot.generator import generate_motion
 from motion_bot.models import motion_from_dict
 from motion_bot.paths import OUTPUT_DIR, ensure_runtime_dirs
 from motion_bot.web.auth import (
+    consume_intro_flag,
     get_session_secret,
     is_authenticated,
     login_session,
     logout_session,
     verify_password,
 )
+from motion_bot.web.search import search_templates
 
 WEB_DIR = Path(__file__).resolve().parent
 TEMPLATES_HTML = WEB_DIR / "templates"
@@ -79,6 +81,7 @@ def _base_ctx(request: Request, **extra: Any) -> Dict[str, Any]:
         "authed": _authed(request),
         "version": __version__,
         "flashes": _pop_flashes(request),
+        "play_intro": False,
     }
     ctx.update(extra)
     return ctx
@@ -87,23 +90,19 @@ def _base_ctx(request: Request, **extra: Any) -> Dict[str, Any]:
 @app.on_event("startup")
 def _startup() -> None:
     ensure_runtime_dirs()
-    # Fail fast if password missing
-    from motion_bot.web.auth import get_site_password
-
-    get_site_password()
 
 
 @app.get("/", response_class=HTMLResponse)
-async def home(request: Request):
+async def root(request: Request):
     if not _authed(request):
         return _redirect_login()
-    return RedirectResponse(url="/dashboard", status_code=303)
+    return RedirectResponse(url="/home", status_code=303)
 
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
     if _authed(request):
-        return RedirectResponse(url="/dashboard", status_code=303)
+        return RedirectResponse(url="/home", status_code=303)
     return templates.TemplateResponse(
         "login.html", _base_ctx(request, error=None)
     )
@@ -111,9 +110,18 @@ async def login_page(request: Request):
 
 @app.post("/login")
 async def login_submit(request: Request, password: str = Form(...)):
+    wants_json = "application/json" in (request.headers.get("accept") or "")
     if verify_password(password):
-        login_session(request)
-        return RedirectResponse(url="/dashboard", status_code=303)
+        login_session(request, play_intro=True)
+        if wants_json:
+            return JSONResponse({"ok": True, "redirect": "/home?awakened=1"})
+        return RedirectResponse(url="/home?awakened=1", status_code=303)
+
+    if wants_json:
+        return JSONResponse(
+            {"ok": False, "error": "Incorrect password."},
+            status_code=401,
+        )
     return templates.TemplateResponse(
         "login.html",
         _base_ctx(request, error="Incorrect password."),
@@ -127,6 +135,26 @@ async def logout(request: Request):
     return RedirectResponse(url="/login", status_code=303)
 
 
+@app.get("/home", response_class=HTMLResponse)
+async def home(request: Request, q: str = "", awakened: Optional[str] = None):
+    if not _authed(request):
+        return _redirect_login()
+    # Play water-ripple intro once after successful login
+    play_intro = consume_intro_flag(request)
+    query = (q or "").strip()
+    results = search_templates(query) if query else []
+    return templates.TemplateResponse(
+        "home.html",
+        _base_ctx(
+            request,
+            query=query,
+            results=results,
+            play_intro=play_intro,
+        ),
+    )
+
+
+@app.get("/library", response_class=HTMLResponse)
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(request: Request):
     if not _authed(request):

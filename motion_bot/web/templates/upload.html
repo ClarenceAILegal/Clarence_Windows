@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Upload · Motion Bot{% endblock %}
 {% block content %}
+<div class="wrap">
   <div class="card">
     <h1>Upload template</h1>
     <p class="muted">
@@ -40,9 +41,10 @@
       <textarea id="description" name="description"></textarea>
 
       <div class="actions">
-        <button class="btn" type="submit">Import template</button>
-        <a class="btn secondary" href="/dashboard">Cancel</a>
+        <button class="btn primary" type="submit">Import template</button>
+        <a class="btn ghost" href="/home">Cancel</a>
       </div>
     </form>
   </div>
+</div>
 {% endblock %}

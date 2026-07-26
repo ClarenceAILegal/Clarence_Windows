@@ -3,25 +3,95 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login · Motion Bot</title>
+  <title>Password</title>
   <link rel="stylesheet" href="/static/style.css" />
 </head>
-<body>
-  <div class="login-shell">
-    <div class="card login-card">
-      <span class="brand">Motion Bot</span>
-      <p class="muted" style="margin-top:0;">Private access — enter the site password.</p>
+<body class="login-page" id="login-body">
+  <canvas id="ripple-canvas"></canvas>
 
-      {% if error %}
-        <div class="error-banner">{{ error }}</div>
-      {% endif %}
+  <form class="login-center" id="login-form" method="post" action="/login" autocomplete="off">
+    <label for="password">Password:</label>
+    <input
+      id="password"
+      name="password"
+      type="password"
+      maxlength="64"
+      autofocus
+      required
+      spellcheck="false"
+    />
+  </form>
 
-      <form method="post" action="/login">
-        <label for="password">Password</label>
-        <input id="password" name="password" type="password" autocomplete="current-password" required autofocus />
-        <button class="btn" type="submit" style="width:100%;">Sign in</button>
-      </form>
-    </div>
-  </div>
+  {% if error %}
+  <div class="login-error" id="login-error">{{ error }}</div>
+  {% else %}
+  <div class="login-error" id="login-error" hidden></div>
+  {% endif %}
+
+  <script src="/static/ripples.js"></script>
+  <script>
+    (function () {
+      const form = document.getElementById("login-form");
+      const input = document.getElementById("password");
+      const err = document.getElementById("login-error");
+      const body = document.getElementById("login-body");
+      const canvas = document.getElementById("ripple-canvas");
+      const engine = window.MotionBotRipples.create(canvas, {
+        waveColor: [200, 230, 255],
+        ambient: false,
+      });
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        err.hidden = true;
+        err.textContent = "";
+
+        const password = input.value;
+        const bodyData = new URLSearchParams();
+        bodyData.set("password", password);
+
+        let res;
+        try {
+          res = await fetch("/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              "Accept": "application/json",
+            },
+            body: bodyData.toString(),
+            credentials: "same-origin",
+          });
+        } catch (ex) {
+          err.hidden = false;
+          err.textContent = "Unable to reach server.";
+          return;
+        }
+
+        if (!res.ok) {
+          let msg = "Incorrect password.";
+          try {
+            const data = await res.json();
+            if (data && data.error) msg = data.error;
+          } catch (_) {}
+          err.hidden = false;
+          err.textContent = msg;
+          input.select();
+          return;
+        }
+
+        // Stone-in-water: concentric ripples, then morph into the future UI
+        canvas.classList.add("active");
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+        engine.splash(cx, cy, 1.25);
+        setTimeout(function () { engine.splash(cx - 40, cy + 20, 0.7); }, 180);
+        setTimeout(function () { engine.splash(cx + 55, cy - 10, 0.55); }, 360);
+        body.classList.add("login-fade-out");
+        setTimeout(function () {
+          window.location.href = "/home?awakened=1";
+        }, 1450);
+      });
+    })();
+  </script>
 </body>
 </html>

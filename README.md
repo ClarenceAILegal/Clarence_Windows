@@ -23,29 +23,30 @@ pip install -e .
 
 ## Private website (password-protected)
 
-Motion Bot includes a private web UI. **Every feature requires a site password.**
+Windows 95–style solid blue login → water-ripple transition → futuristic white search UI.
 
 ```bash
-export MOTION_BOT_PASSWORD='your-strong-password'
-# optional, keeps logins valid across restarts:
-# export MOTION_BOT_SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
-
 motion-bot serve
 # open http://127.0.0.1:8000
 ```
 
+| Item | Detail |
+|------|--------|
+| Default password | `B0ts4Justice` (**case-sensitive**) |
+| Override | `export MOTION_BOT_PASSWORD='...'` |
+| Session secret | optional `MOTION_BOT_SECRET_KEY` |
+
 | Page | Purpose |
 |------|---------|
-| `/login` | Password gate |
-| `/dashboard` | Browse templates + recent downloads |
+| `/login` | Solid blue Win95-style password gate |
+| `/home` | Futuristic motion search by description |
+| `/library` | Full template list + recent downloads |
 | `/generate` | Fill fields and generate a motion `.docx` |
 | `/upload` | Import a Lexis `.docx` template |
-| `/download/...` | Download generated Word files (auth required) |
 
 Notes:
-- Default bind is **localhost only** (`127.0.0.1`). To expose on a network, use `motion-bot serve --host 0.0.0.0` and put **HTTPS + firewall** in front.
-- This is a **shared site password**, not multi-user accounts.
-- Do not commit real passwords; see `.env.example`.
+- Default bind is **localhost only** (`127.0.0.1`).
+- Shared site password (not multi-user accounts).
 
 ## CLI quick start
 

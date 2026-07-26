@@ -4,22 +4,30 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}Motion Bot{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css" />
 </head>
-<body>
-  {% if authed %}
-  <div class="wrap">
-    <nav class="nav">
-      <a class="brand" href="/dashboard">Motion Bot</a>
-      <div class="nav-links">
-        <a href="/dashboard">Templates</a>
+<body class="app-page">
+  {% if play_intro %}
+  <div class="intro-veil" id="intro-veil"></div>
+  {% endif %}
+  <canvas id="future-ripples"></canvas>
+
+  <div class="app-shell">
+    <header class="top-bar">
+      <a class="logo" href="/home">Motion Bot</a>
+      <nav class="nav-links">
+        <a href="/home">Search</a>
+        <a href="/library">Library</a>
         <a href="/generate">Generate</a>
         <a href="/upload">Upload</a>
         <form method="post" action="/logout" style="display:inline;margin:0;">
           <button class="linkish" type="submit">Log out</button>
         </form>
-      </div>
-    </nav>
+      </nav>
+    </header>
 
     {% for f in flashes %}
       <div class="flash {{ f.level }}">{{ f.message }}</div>
@@ -27,10 +35,33 @@
 
     {% block content %}{% endblock %}
 
-    <footer class="footer">Private site · v{{ version }} · generated documents stay on this server</footer>
+    <footer class="footer">Private · v{{ version }}</footer>
   </div>
-  {% else %}
-    {% block public %}{% endblock %}
-  {% endif %}
+
+  <script src="/static/ripples.js"></script>
+  <script>
+    (function () {
+      const canvas = document.getElementById("future-ripples");
+      if (!canvas || !window.MotionBotRipples) return;
+      const engine = window.MotionBotRipples.create(canvas, {
+        ambient: true,
+        interactive: true,
+        waveColor: [0, 150, 200],
+        clearAlpha: 0.06,
+      });
+      engine.start();
+      // soft opening ripple after login transition
+      {% if play_intro %}
+      setTimeout(function () {
+        engine.splash(window.innerWidth * 0.5, window.innerHeight * 0.42, 1.0);
+      }, 200);
+      setTimeout(function () {
+        const veil = document.getElementById("intro-veil");
+        if (veil) veil.remove();
+      }, 1700);
+      {% endif %}
+    })();
+  </script>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

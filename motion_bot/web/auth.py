@@ -10,17 +10,18 @@ from typing import Optional
 from starlette.requests import Request
 
 SESSION_AUTH_KEY = "motion_bot_authenticated"
+SESSION_PLAY_INTRO = "motion_bot_play_intro"
 ENV_PASSWORD = "MOTION_BOT_PASSWORD"
 ENV_SECRET = "MOTION_BOT_SECRET_KEY"
 
+# Case-sensitive site password (overridable via MOTION_BOT_PASSWORD)
+DEFAULT_PASSWORD = "B0ts4Justice"
+
 
 def get_site_password() -> str:
-    password = os.environ.get(ENV_PASSWORD, "").strip()
-    if not password:
-        raise RuntimeError(
-            f"Set {ENV_PASSWORD} before starting the web UI "
-            "(shared site password required)."
-        )
+    password = os.environ.get(ENV_PASSWORD)
+    if password is None or password == "":
+        return DEFAULT_PASSWORD
     return password
 
 
@@ -33,16 +34,29 @@ def get_session_secret() -> str:
 
 
 def verify_password(candidate: str) -> bool:
+    """Case-sensitive password check."""
     expected = get_site_password()
-    return hmac.compare_digest(candidate.encode("utf-8"), expected.encode("utf-8"))
+    return hmac.compare_digest(
+        candidate.encode("utf-8"),
+        expected.encode("utf-8"),
+    )
 
 
 def is_authenticated(request: Request) -> bool:
     return bool(request.session.get(SESSION_AUTH_KEY))
 
 
-def login_session(request: Request) -> None:
+def login_session(request: Request, *, play_intro: bool = True) -> None:
     request.session[SESSION_AUTH_KEY] = True
+    if play_intro:
+        request.session[SESSION_PLAY_INTRO] = True
+
+
+def consume_intro_flag(request: Request) -> bool:
+    """Return True once after login so the UI can play the ripple transition."""
+    if request.session.pop(SESSION_PLAY_INTRO, False):
+        return True
+    return False
 
 
 def logout_session(request: Request) -> None:
@@ -50,7 +64,6 @@ def logout_session(request: Request) -> None:
 
 
 def require_login_redirect(request: Request) -> Optional[str]:
-    """Return login URL if not authenticated, else None."""
     if is_authenticated(request):
         return None
     return "/login"

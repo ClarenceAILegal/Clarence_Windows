@@ -174,23 +174,20 @@ def paths_cmd() -> None:
 def serve_cmd(host: str, port: int, reload: bool) -> None:
     """Run the password-protected private web UI.
 
-    Requires MOTION_BOT_PASSWORD in the environment. Optional:
-    MOTION_BOT_SECRET_KEY for stable session cookies across restarts.
+    Default password is B0ts4Justice (case-sensitive) unless MOTION_BOT_PASSWORD
+    is set. Optional: MOTION_BOT_SECRET_KEY for stable sessions across restarts.
     """
-    import os
-
     import uvicorn
 
-    if not os.environ.get("MOTION_BOT_PASSWORD", "").strip():
-        raise click.ClickException(
-            "Set MOTION_BOT_PASSWORD before starting the web UI.\n"
-            "Example:\n"
-            "  export MOTION_BOT_PASSWORD='your-strong-password'\n"
-            "  motion-bot serve"
-        )
+    from motion_bot.web.auth import DEFAULT_PASSWORD, get_site_password
 
+    active = get_site_password()
+    using_default = active == DEFAULT_PASSWORD
     click.echo(f"Motion Bot private site: http://{host}:{port}")
-    click.echo("All features require the site password.")
+    if using_default:
+        click.echo("Site password: default (B0ts4Justice) — case-sensitive")
+    else:
+        click.echo("Site password: custom (MOTION_BOT_PASSWORD)")
     uvicorn.run(
         "motion_bot.web.app:app",
         host=host,

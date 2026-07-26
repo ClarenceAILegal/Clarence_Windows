@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Generate · Motion Bot{% endblock %}
 {% block content %}
+<div class="wrap">
   <div class="card">
     <h1>Generate motion</h1>
     <p class="muted">Fill case fields and download a Word (.docx) motion.</p>
@@ -175,9 +176,10 @@
       {% endif %}
 
       <div class="actions">
-        <button class="btn" type="submit">Generate Word motion</button>
-        <a class="btn secondary" href="/dashboard">Cancel</a>
+        <button class="btn primary" type="submit">Generate Word motion</button>
+        <a class="btn ghost" href="/home">Cancel</a>
       </div>
     </form>
   </div>
+</div>
 {% endblock %}

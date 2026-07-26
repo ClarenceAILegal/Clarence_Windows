@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Motion Bot{% endblock %}
+{% block content %}
+  <section class="hero">
+    <p class="hero-sub">Describe the motion you need. Motion Bot searches your private Lexis-sourced library.</p>
+
+    <div class="search-panel">
+      <form class="search-form" method="get" action="/home" role="search">
+        <input
+          type="search"
+          name="q"
+          value="{{ query }}"
+          placeholder="e.g. motion to suppress eyewitness identification for suggestive photo lineup"
+          autofocus
+          aria-label="Search motions"
+        />
+        <button type="submit">Search</button>
+      </form>
+    </div>
+
+    {% if query %}
+    <div class="results">
+      {% if results %}
+        {% for entry, score in results %}
+        <article class="result-card">
+          <div>
+            <h3>{{ entry.name }}</h3>
+            <p>{{ entry.description or "No description." }}</p>
+            <div class="result-meta">
+              {% if entry.jurisdiction %}<span class="badge">{{ entry.jurisdiction }}</span>{% endif %}
+              {% if entry.motion_type %}<span class="badge">{{ entry.motion_type }}</span>{% endif %}
+              <span class="badge">{{ entry.source }}</span>
+            </div>
+          </div>
+          <div class="result-actions">
+            <a class="btn primary" href="/generate?template_id={{ entry.id }}">Use</a>
+            <a class="btn ghost" href="/templates/{{ entry.id }}">Details</a>
+          </div>
+        </article>
+        {% endfor %}
+      {% else %}
+        <div class="result-card">
+          <div>
+            <h3>No matching motions</h3>
+            <p>Try different words, or open the full library.</p>
+          </div>
+          <div class="result-actions">
+            <a class="btn ghost" href="/library">Library</a>
+          </div>
+        </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </section>
+{% endblock %}
