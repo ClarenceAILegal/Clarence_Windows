@@ -63,7 +63,47 @@
             <a class="menu-item" href="/library" style="--i:1">Library</a>
             <a class="menu-item" href="/generate" style="--i:2">Generate</a>
             <a class="menu-item" href="/upload" style="--i:3">Upload</a>
-            <form class="menu-item menu-logout" method="post" action="/logout" style="--i:4">
+            <div class="menu-item menu-grok" style="--i:4">
+              <label class="grok-toggle" title="Grok is only used for chat when on. Each person uses their own API key on their computer.">
+                <span class="grok-toggle-text">Grok chat</span>
+                <input
+                  type="checkbox"
+                  id="grok-toggle"
+                  {% if grok_chat_on %}checked{% endif %}
+                  {% if not grok_key_present %}disabled{% endif %}
+                  aria-describedby="grok-toggle-hint"
+                />
+                <span class="grok-switch" aria-hidden="true"></span>
+              </label>
+              <p class="grok-toggle-hint" id="grok-toggle-hint">
+                {% if not grok_key_present %}
+                  Free mode · add your own API key below
+                {% elif grok_chat_on %}
+                  On · uses your key (you pay)
+                {% else %}
+                  Off · free built-in chat
+                {% endif %}
+              </p>
+              <div class="menu-api-key" id="menu-api-key">
+                <label class="menu-api-key-label" for="api-key-input">Your xAI API key</label>
+                <input
+                  type="password"
+                  id="api-key-input"
+                  class="menu-api-key-input"
+                  placeholder="{% if grok_key_present %}Saved: {{ grok_key_masked }}{% else %}xai-… (this Mac only){% endif %}"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+                <div class="menu-api-key-actions">
+                  <button type="button" class="menu-api-key-btn" id="api-key-save">Save key</button>
+                  <button type="button" class="menu-api-key-btn ghost" id="api-key-clear" {% if not grok_key_present %}hidden{% endif %}>Remove</button>
+                </div>
+                <p class="grok-toggle-hint" id="api-key-status">
+                  Each user gets their own key at console.x.ai — never shared.
+                </p>
+              </div>
+            </div>
+            <form class="menu-item menu-logout" method="post" action="/logout" style="--i:5">
               <button class="linkish" type="submit">Log out</button>
             </form>
           </div>
@@ -105,6 +145,144 @@
         });
         document.addEventListener("keydown", function (e) {
           if (e.key === "Escape") setOpen(false);
+        });
+      }
+
+      // Per-user API key + Grok toggle (generate/form never use Grok)
+      var grokToggle = document.getElementById("grok-toggle");
+      var grokHint = document.getElementById("grok-toggle-hint");
+      var keyInput = document.getElementById("api-key-input");
+      var keySave = document.getElementById("api-key-save");
+      var keyClear = document.getElementById("api-key-clear");
+      var keyStatus = document.getElementById("api-key-status");
+      var keyPresent = {{ "true" if grok_key_present else "false" }};
+
+      function setHint(on) {
+        if (!grokHint) return;
+        if (!keyPresent) {
+          grokHint.textContent = "Free mode · add your own API key below";
+        } else if (on) {
+          grokHint.textContent = "On · uses your key (you pay)";
+        } else {
+          grokHint.textContent = "Off · free built-in chat";
+        }
+        document.querySelectorAll("[data-grok-status]").forEach(function (el) {
+          el.textContent = on && keyPresent ? "Grok chat ON" : "Free chat";
+          el.classList.toggle("is-on", !!(on && keyPresent));
+        });
+        if (grokToggle) {
+          grokToggle.disabled = !keyPresent;
+          if (!keyPresent) grokToggle.checked = false;
+        }
+        if (keyClear) keyClear.hidden = !keyPresent;
+      }
+
+      function applyKeyState(data) {
+        keyPresent = !!(data && data.grok_key_present);
+        if (keyInput && data && data.grok_key_masked) {
+          keyInput.placeholder = "Saved: " + data.grok_key_masked;
+          keyInput.value = "";
+        } else if (keyInput && !keyPresent) {
+          keyInput.placeholder = "xai-… (this Mac only)";
+        }
+        if (keyStatus && data && data.message) {
+          keyStatus.textContent = data.message;
+        }
+        setHint(grokToggle ? !!grokToggle.checked : false);
+      }
+
+      setHint({{ "true" if grok_chat_on else "false" }});
+
+      if (grokToggle) {
+        grokToggle.addEventListener("change", function () {
+          if (!keyPresent) {
+            grokToggle.checked = false;
+            if (keyStatus) {
+              keyStatus.textContent = "Save your own API key first (console.x.ai).";
+            }
+            return;
+          }
+          var enabled = !!grokToggle.checked;
+          setHint(enabled);
+          fetch("/api/settings/grok", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({ enabled: enabled }),
+            credentials: "same-origin",
+          })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (!data || !data.ok) {
+                grokToggle.checked = !enabled;
+                setHint(!enabled);
+                return;
+              }
+              setHint(!!data.grok_chat_enabled);
+            })
+            .catch(function () {
+              grokToggle.checked = !enabled;
+              setHint(!enabled);
+            });
+        });
+      }
+
+      if (keySave && keyInput) {
+        keySave.addEventListener("click", function () {
+          var key = (keyInput.value || "").trim();
+          if (!key) {
+            if (keyStatus) keyStatus.textContent = "Paste your key from console.x.ai first.";
+            keyInput.focus();
+            return;
+          }
+          keySave.disabled = true;
+          fetch("/api/settings/api-key", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({ key: key }),
+            credentials: "same-origin",
+          })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              keySave.disabled = false;
+              if (!data || !data.ok) {
+                if (keyStatus) {
+                  keyStatus.textContent = (data && data.error) || "Could not save key.";
+                }
+                return;
+              }
+              applyKeyState(data);
+            })
+            .catch(function () {
+              keySave.disabled = false;
+              if (keyStatus) keyStatus.textContent = "Could not save key.";
+            });
+        });
+      }
+
+      if (keyClear) {
+        keyClear.addEventListener("click", function () {
+          fetch("/api/settings/api-key", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({ clear: true }),
+            credentials: "same-origin",
+          })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+              if (!data || !data.ok) return;
+              applyKeyState(data);
+              if (grokToggle) grokToggle.checked = false;
+              setHint(false);
+            });
         });
       }
 

@@ -163,6 +163,18 @@ def paths_cmd() -> None:
     click.echo(f"output:          {OUTPUT_DIR}")
 
 
+@main.command("desktop")
+def desktop_cmd() -> None:
+    """Launch Clarence as a desktop app (native window)."""
+    import runpy
+    from pathlib import Path
+
+    launcher = Path(__file__).resolve().parent.parent / "desktop_app.py"
+    if not launcher.exists():
+        raise click.ClickException(f"Missing desktop launcher: {launcher}")
+    runpy.run_path(str(launcher), run_name="__main__")
+
+
 @main.command("serve")
 @click.option(
     "--host",

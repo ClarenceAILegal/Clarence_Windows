@@ -31,38 +31,43 @@
             <div class="chat-reply is-visible" id="chat-reply">
               {% if generate_error %}
                 <p>{{ generate_error }}</p>
-                {% if not results %}
-                <p>
-                  <strong>Would you like to upload a template</strong> for this motion?
-                </p>
                 <p class="chat-upload-ask">
-                  Drop a Word file (.docx) on the bar below — I’ll add it to your library automatically,
-                  then send this request again.
+                  <strong>Would you like to upload a template?</strong>
+                  Drop a .docx on the bar below and I’ll add it to your library, then try again.
                 </p>
-                {% endif %}
-              {% elif results %}
-                <p>
-                  Got it. I found
-                  {% if results|length == 1 %}
-                    a matching motion in your library
-                  {% else %}
-                    {{ results|length }} possible matches in your library
+              {% else %}
+                {% for para in (chat_message or '').split('\n') %}
+                  {% if para.strip() %}
+                  <p>{{ para }}</p>
                   {% endif %}
-                  {% if best_template_name %} (top match: <strong>{{ best_template_name }}</strong>){% endif %}.
-                  How would you like to proceed?
-                </p>
+                {% endfor %}
+
+                {% if offer_generate or offer_form %}
                 <div class="chat-choices">
+                  {% if offer_generate %}
                   <a
                     class="chat-choice chat-choice-primary"
                     href="/home?q={{ query|urlencode }}&amp;mode=generate{% if best_template_id %}&amp;template_id={{ best_template_id|urlencode }}{% endif %}"
                   >Generate the motion for me</a>
+                  {% endif %}
+                  {% if offer_form %}
                   <form method="post" action="/prepare-form" class="chat-choice-form">
                     <input type="hidden" name="q" value="{{ query }}" />
                     <input type="hidden" name="template_id" value="{{ best_template_id }}" />
                     <button class="chat-choice" type="submit">Fill out the form step by step</button>
                   </form>
+                  {% endif %}
                 </div>
-                {% if extracted %}
+                {% endif %}
+
+                {% if offer_upload %}
+                <p class="chat-upload-ask">
+                  <strong>Upload a template:</strong> drop a Word (.docx) file on the bar below.
+                  I’ll add it to your library automatically.
+                </p>
+                {% endif %}
+
+                {% if offer_generate and extracted %}
                 <div class="extracted-strip chat-extracted">
                   <span class="extracted-label">I’ll use:</span>
                   {% for key, val in extracted.items() %}
@@ -72,19 +77,15 @@
                   {% endfor %}
                 </div>
                 {% endif %}
-              {% else %}
-                <p>
-                  I don’t have a matching motion template in your library for
-                  “{{ query }}”.
+
+                {% if chat_engine %}
+                <p class="muted chat-engine-tag">
+                  Engine: {{ chat_engine }}
+                  {% if chat_engine == "free (built-in)" %}
+                    · one-shot &amp; form never bill
+                  {% endif %}
                 </p>
-                <p>
-                  <strong>Would you like to upload a template?</strong>
-                </p>
-                <p class="chat-upload-ask">
-                  Drop a Word document (.docx) onto the bar below and I’ll add it to your library
-                  automatically. Then send your request again so we can generate the motion or walk
-                  through the form.
-                </p>
+                {% endif %}
               {% endif %}
             </div>
           </div>
@@ -93,7 +94,7 @@
       {% endif %}
 
       <form
-        class="search-form search-form-composer{% if show_chat and query and not results %} needs-upload{% endif %}"
+        class="search-form search-form-composer{% if show_chat and query and offer_upload and not offer_generate %} needs-upload{% endif %}"
         id="search-form"
         method="get"
         action="/home"
@@ -120,6 +121,13 @@
               <path d="M12 19V5M12 5l-6 6M12 5l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </button>
+        </div>
+        <div class="composer-meta">
+          <span
+            class="grok-status-pill{% if grok_chat_on and grok_key_present %} is-on{% endif %}"
+            data-grok-status
+          >{% if grok_chat_on and grok_key_present %}Grok chat ON{% else %}Free chat{% endif %}</span>
+          <span class="muted composer-meta-note">Generate / form pathways never use the API</span>
         </div>
         <p class="search-status" id="search-status" hidden></p>
       </form>

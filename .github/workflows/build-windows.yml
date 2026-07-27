@@ -1,0 +1,64 @@
+name: Build Clarence (Windows)
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  windows:
+    name: Windows standalone zip
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install project + build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install "pyinstaller>=6.0" pillow pywebview pythonnet
+
+      - name: Build icons
+        run: python scripts/build_app_icon.py
+
+      - name: PyInstaller
+        run: |
+          pyinstaller --noconfirm --distpath dist --workpath build/pyinstaller-win packaging/clarence-windows.spec
+
+      - name: Package zip
+        shell: pwsh
+        run: |
+          $Built = "dist/Clarence"
+          if (-not (Test-Path "$Built/Clarence.exe")) { throw "Clarence.exe missing" }
+          $Out = "dist/Clarence-Windows"
+          New-Item -ItemType Directory -Force -Path $Out | Out-Null
+          Copy-Item -Recurse -Force $Built "$Out/Clarence"
+          @"
+          Clarence for Windows — private motion drafting
+
+          1. Unzip, open the Clarence folder.
+          2. Double-click Clarence.exe
+             - SmartScreen: More info → Run anyway
+          3. Password: B0ts4Justice
+          4. Optional Grok: add YOUR own API key in the bear menu (console.x.ai).
+          5. Upload your templates — data stays on this PC.
+
+          Needs Windows 10/11 + Edge WebView2 (usually preinstalled).
+          Data: %APPDATA%\Clarence\
+          Logs: %LOCALAPPDATA%\Clarence\Logs\clarence.log
+          "@ | Set-Content -Encoding UTF8 "$Out/How to open Clarence.txt"
+          Compress-Archive -Path "$Out/*" -DestinationPath "dist/Clarence-Windows.zip" -Force
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Clarence-Windows
+          path: dist/Clarence-Windows.zip
+          if-no-files-found: error

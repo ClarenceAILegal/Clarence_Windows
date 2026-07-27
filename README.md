@@ -19,9 +19,50 @@ pip install --upgrade pip setuptools wheel
 pip install -e .
 ```
 
-## Private website (password-protected)
+## Desktop app (recommended)
 
-Windows 95–style solid medium-red login → water-ripple transition → futuristic white search UI branded **Clarence**.
+### Share a double-click app
+
+**macOS (build on a Mac):**
+```bash
+cd Motion-Bot
+source .venv/bin/activate
+./scripts/build_standalone_app.sh
+```
+AirDrop / send: `dist/Clarence-macOS.zip` or `dist/Clarence-AirDrop/Clarence.app`  
+First open: **Right-click → Open**. Password: `B0ts4Justice`.
+
+**Windows (build on Windows or GitHub Actions):** see [WINDOWS.md](WINDOWS.md).  
+```powershell
+.\scripts\build_standalone_app_windows.ps1
+```
+Send: `dist\Clarence-Windows.zip` → they run `Clarence\Clarence.exe`.
+
+Each person adds **their own** Grok key (optional). Data stays on **their** machine only.
+
+### Dev / local launch (this machine)
+
+```bash
+cd Motion-Bot
+source .venv/bin/activate
+pip install -r requirements.txt
+
+# Launch native window
+python desktop_app.py
+# or: ./run_desktop.sh
+# or: motion-bot desktop
+```
+
+**Grok API keys (bring your own — per computer)**
+- Each person adds **their own** key in the bear menu → **Your xAI API key** (from [console.x.ai](https://console.x.ai/)).
+- Keys are stored only on that Mac (`~/Library/Application Support/Clarence/`), never inside the app and never shared with other users.
+- Someone else on another computer will not have your key and must create their own.
+- Default chat is **free built-in**; turn **Grok chat** on only when you want paid reasoning.
+- **One-shot generate** and **form fill never call Grok**.
+
+## Local website mode
+
+Blue Win95 login + graphene lattice, branded **Clarence**.
 
 ```bash
 motion-bot serve

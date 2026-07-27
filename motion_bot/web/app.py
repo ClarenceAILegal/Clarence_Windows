@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import json
+import os
+import platform
 import re
 import shutil
+import subprocess
 import tempfile
 from datetime import date
 from pathlib import Path
@@ -29,7 +32,17 @@ from motion_bot.compose import compose_motion_request, form_defaults_for_templat
 from motion_bot.generator import generate_motion
 from motion_bot.models import motion_from_dict
 from motion_bot.paths import OUTPUT_DIR, ensure_runtime_dirs
+from motion_bot.grok_chat import clarence_reply, grok_available
 from motion_bot.query_parse import parse_user_query
+from motion_bot.settings import (
+    clear_xai_api_key,
+    get_xai_api_key,
+    is_grok_chat_enabled,
+    mask_api_key,
+    set_grok_chat_enabled,
+    set_xai_api_key,
+    settings_path,
+)
 from motion_bot.web.auth import (
     consume_intro_flag,
     get_session_secret,
@@ -46,6 +59,112 @@ TEMPLATES_HTML = WEB_DIR / "templates"
 STATIC_DIR = WEB_DIR / "static"
 
 SAFE_ID_RE = re.compile(r"[^a-zA-Z0-9._-]+")
+
+
+def _is_desktop() -> bool:
+    return os.environ.get("CLARENCE_DESKTOP", "").strip() in ("1", "true", "yes", "on")
+
+
+def _downloads_dir() -> Path:
+    home = Path.home()
+    candidates = [
+        home / "Downloads",
+        home / "Download",
+    ]
+    # Windows: respect user profile Downloads
+    if platform.system() == "Windows":
+        userprofile = os.environ.get("USERPROFILE")
+        if userprofile:
+            candidates.insert(0, Path(userprofile) / "Downloads")
+    for c in candidates:
+        if c.is_dir():
+            return c
+    # Fall back to project output if Downloads missing
+    ensure_runtime_dirs()
+    return OUTPUT_DIR
+
+
+def _copy_to_downloads(path: Path) -> Path:
+    """Copy generated motion into the user's Downloads folder."""
+    dest_dir = _downloads_dir()
+    dest = dest_dir / path.name
+    # Avoid clobbering: if exists, add a short suffix
+    if dest.exists():
+        stem = path.stem
+        dest = dest_dir / f"{stem}_copy{path.suffix}"
+        n = 2
+        while dest.exists():
+            dest = dest_dir / f"{stem}_copy{n}{path.suffix}"
+            n += 1
+    shutil.copy2(path, dest)
+    return dest
+
+
+def _open_path(path: Path, *, reveal: bool = False) -> None:
+    """Open or reveal a file in the OS file manager / default app (best-effort)."""
+    try:
+        system = platform.system()
+        if system == "Darwin":
+            if reveal:
+                subprocess.Popen(["open", "-R", str(path)])  # noqa: S603
+            else:
+                subprocess.Popen(["open", str(path)])  # noqa: S603
+        elif system == "Windows":
+            if reveal:
+                # Open Explorer with the file selected
+                subprocess.Popen(  # noqa: S603
+                    ["explorer", f"/select,{path}"]
+                )
+            else:
+                os.startfile(str(path))  # type: ignore[attr-defined]
+        else:
+            subprocess.Popen(["xdg-open", str(path)])  # noqa: S603
+    except Exception:
+        pass
+
+
+def _finish_generation(
+    request: Request,
+    out_path: Path,
+    *,
+    template_name: str = "",
+) -> HTMLResponse:
+    """
+    After a motion is written: copy to Downloads, open on desktop, show success page.
+
+    pywebview (desktop) does not reliably handle Content-Disposition downloads, so we
+    never leave the user on a blank binary response.
+    """
+    ensure_runtime_dirs()
+    downloads_copy: Optional[Path] = None
+    try:
+        downloads_copy = _copy_to_downloads(out_path)
+    except Exception:
+        downloads_copy = None
+
+    # Desktop: open the document in Word/Pages/etc. immediately
+    open_target = downloads_copy or out_path
+    if _is_desktop():
+        _open_path(open_target, reveal=False)
+
+    _flash(
+        request,
+        f"Generated “{out_path.name}”"
+        + (f" · also saved to Downloads" if downloads_copy else ""),
+        "success",
+    )
+    return templates.TemplateResponse(
+        "generated.html",
+        _base_ctx(
+            request,
+            filename=out_path.name,
+            output_path=str(out_path),
+            downloads_name=(downloads_copy.name if downloads_copy else ""),
+            downloads_path=(str(downloads_copy) if downloads_copy else ""),
+            template_name=template_name,
+            is_desktop=_is_desktop(),
+        ),
+    )
 
 app = FastAPI(title="Clarence", version=__version__, docs_url=None, redoc_url=None)
 app.add_middleware(
@@ -80,12 +199,19 @@ def _pop_flashes(request: Request) -> List[Dict[str, str]]:
 
 
 def _base_ctx(request: Request, **extra: Any) -> Dict[str, Any]:
+    grok_key = grok_available()
+    grok_on = is_grok_chat_enabled()
     ctx = {
         "request": request,
         "authed": _authed(request),
         "version": __version__,
         "flashes": _pop_flashes(request),
         "play_intro": False,
+        # Key is per-user/machine; only grok_chat_on means chat may bill.
+        "grok_key_present": grok_key,
+        "grok_chat_on": grok_on,
+        "grok_enabled": grok_key and grok_on,
+        "grok_key_masked": mask_api_key() if grok_key else "",
     }
     ctx.update(extra)
     return ctx
@@ -210,32 +336,186 @@ async def home(
                     generate_error=f"Could not generate: {exc}",
                     extracted=parsed.fields if parsed else {},
                     show_chat=True,
+                    offer_generate=bool(results),
+                    offer_form=bool(results),
+                    offer_upload=not bool(results),
+                    best_template_id=(best_entry.id if best_entry else ""),
+                    best_template_name=(best_entry.name if best_entry else ""),
+                    chat_message="",
+                    chat_engine="free (built-in)",
                 ),
                 status_code=400,
             )
-        _flash(
-            request,
-            f"Generated from “{best_entry.name}” using details from your prompt.",
-            "success",
+        return _finish_generation(
+            request, out_path, template_name=best_entry.name
         )
-        return RedirectResponse(url=f"/download/{out_path.name}", status_code=303)
 
     extracted = parsed.fields if parsed else {}
-    # Always pass chat-related keys so the template never hits undefined surprises
+    # Grok only for conversational chat when the user has turned it ON.
+    # mode=generate (one-shot) returns earlier and never bills.
+    # Form path is a separate POST and never bills.
+    chat = None
+    if query:
+        chat = clarence_reply(
+            query,
+            results,
+            extracted,
+            use_grok=is_grok_chat_enabled(),
+        )
+
+    best_id = ""
+    best_name = ""
+    if chat and chat.best_template_id:
+        best_id = chat.best_template_id
+        best_name = chat.best_template_name
+    elif results:
+        best_id = results[0][0].id
+        best_name = results[0][0].name
+
+    # If Grok/rules say upload-only, hide weak false matches from the UI
+    display_results = results
+    if chat and chat.offer_upload and not chat.offer_generate and not chat.offer_form:
+        display_results = []
+        best_id = ""
+        best_name = ""
+
+    engine_label = chat.source if chat else "rules"
+    if engine_label == "rules":
+        engine_label = "free (built-in)"
+    elif engine_label == "grok":
+        engine_label = "Grok (API)"
+
     return templates.TemplateResponse(
         "home.html",
         _base_ctx(
             request,
             query=query,
-            results=results,
+            results=display_results,
             play_intro=play_intro,
             mode=mode,
             generate_error=None,
             extracted=extracted,
             show_chat=bool(query),
-            best_template_id=(results[0][0].id if results else ""),
-            best_template_name=(results[0][0].name if results else ""),
+            best_template_id=best_id,
+            best_template_name=best_name,
+            chat_message=(chat.message if chat else ""),
+            offer_generate=bool(chat.offer_generate) if chat else False,
+            offer_form=bool(chat.offer_form) if chat else False,
+            offer_upload=bool(chat.offer_upload) if chat else False,
+            chat_engine=engine_label,
         ),
+    )
+
+
+@app.get("/api/settings")
+async def api_get_settings(request: Request):
+    if not _authed(request):
+        return JSONResponse({"ok": False, "error": "auth"}, status_code=401)
+    return JSONResponse(
+        {
+            "ok": True,
+            "grok_chat_enabled": is_grok_chat_enabled(),
+            "grok_key_present": grok_available(),
+            "grok_key_masked": mask_api_key(),
+            "settings_path": str(settings_path()),
+            "note": (
+                "Each person must add their own Grok API key on their computer. "
+                "Keys are stored only on this Mac and are never shared. "
+                "One-shot generate and form fill never call Grok."
+            ),
+        }
+    )
+
+
+@app.post("/api/settings/grok")
+async def api_set_grok(request: Request):
+    """Toggle Grok for chat only. Default is off (no API charges)."""
+    if not _authed(request):
+        return JSONResponse({"ok": False, "error": "auth"}, status_code=401)
+    enabled: Optional[bool] = None
+    content_type = (request.headers.get("content-type") or "").lower()
+    if "application/json" in content_type:
+        try:
+            body = await request.json()
+        except Exception:  # noqa: BLE001
+            body = {}
+        if isinstance(body, dict) and "enabled" in body:
+            enabled = bool(body.get("enabled"))
+    else:
+        form = await request.form()
+        raw = form.get("enabled")
+        if raw is not None:
+            enabled = str(raw).strip().lower() in ("1", "true", "yes", "on")
+
+    if enabled is None:
+        return JSONResponse(
+            {"ok": False, "error": "missing enabled"},
+            status_code=400,
+        )
+
+    saved = set_grok_chat_enabled(enabled)
+    return JSONResponse(
+        {
+            "ok": True,
+            "grok_chat_enabled": bool(saved.get("grok_chat_enabled")),
+            "grok_key_present": grok_available(),
+            "grok_key_masked": mask_api_key(),
+            "billing": (
+                "Chat may use paid Grok API"
+                if saved.get("grok_chat_enabled") and grok_available()
+                else "Free built-in chat (no API charges)"
+            ),
+        }
+    )
+
+
+@app.post("/api/settings/api-key")
+async def api_set_api_key(request: Request):
+    """Save this user's private xAI API key (this computer only)."""
+    if not _authed(request):
+        return JSONResponse({"ok": False, "error": "auth"}, status_code=401)
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        body = {}
+    if not isinstance(body, dict):
+        body = {}
+
+    if body.get("clear"):
+        clear_xai_api_key()
+        # If Grok was on, leave toggle as-is but it won't bill without a key
+        return JSONResponse(
+            {
+                "ok": True,
+                "grok_key_present": False,
+                "grok_key_masked": "",
+                "message": "API key removed from this computer.",
+            }
+        )
+
+    key = str(body.get("key") or body.get("api_key") or "").strip()
+    if not key:
+        return JSONResponse(
+            {"ok": False, "error": "Paste your xAI API key."},
+            status_code=400,
+        )
+    if len(key) < 12:
+        return JSONResponse(
+            {"ok": False, "error": "That does not look like a valid API key."},
+            status_code=400,
+        )
+
+    set_xai_api_key(key)
+    return JSONResponse(
+        {
+            "ok": True,
+            "grok_key_present": True,
+            "grok_key_masked": mask_api_key(),
+            "message": (
+                "API key saved on this computer only. "
+                "Other people need their own key on their machines."
+            ),
+        }
     )
 
 
@@ -486,8 +766,11 @@ async def generate_submit(request: Request):
             status_code=400,
         )
 
-    _flash(request, f"Generated {out_path.name}", "success")
-    return RedirectResponse(url=f"/download/{out_path.name}", status_code=303)
+    return _finish_generation(
+        request,
+        out_path,
+        template_name=(selected.name if selected else ""),
+    )
 
 
 @app.get("/download/{filename}")
@@ -501,13 +784,61 @@ async def download_file(request: Request, filename: str):
         return RedirectResponse(url="/dashboard", status_code=303)
     path = OUTPUT_DIR / safe
     if not path.exists() or not path.is_file():
-        _flash(request, "File not found.", "error")
-        return RedirectResponse(url="/dashboard", status_code=303)
+        # Also allow files that only live in Downloads (desktop copy)
+        dl = _downloads_dir() / safe
+        if dl.exists() and dl.is_file():
+            path = dl
+        else:
+            _flash(request, "File not found.", "error")
+            return RedirectResponse(url="/library", status_code=303)
+    headers = {
+        "Content-Disposition": f'attachment; filename="{safe}"',
+        "Cache-Control": "no-store",
+    }
     return FileResponse(
         path,
         filename=safe,
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers=headers,
     )
+
+
+@app.post("/api/reveal-file")
+async def api_reveal_file(request: Request):
+    """Desktop helper: reveal a generated file in Finder."""
+    if not _authed(request):
+        return JSONResponse({"ok": False, "error": "auth"}, status_code=401)
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        body = {}
+    name = Path(str((body or {}).get("filename") or "")).name
+    if not name or SAFE_ID_RE.search(name) or not name.endswith(".docx"):
+        return JSONResponse({"ok": False, "error": "invalid"}, status_code=400)
+    for candidate in (OUTPUT_DIR / name, _downloads_dir() / name):
+        if candidate.exists():
+            _open_path(candidate, reveal=True)
+            return JSONResponse({"ok": True, "path": str(candidate)})
+    return JSONResponse({"ok": False, "error": "not_found"}, status_code=404)
+
+
+@app.post("/api/open-file")
+async def api_open_file(request: Request):
+    """Desktop helper: open a generated .docx in the default app."""
+    if not _authed(request):
+        return JSONResponse({"ok": False, "error": "auth"}, status_code=401)
+    try:
+        body = await request.json()
+    except Exception:  # noqa: BLE001
+        body = {}
+    name = Path(str((body or {}).get("filename") or "")).name
+    if not name or SAFE_ID_RE.search(name) or not name.endswith(".docx"):
+        return JSONResponse({"ok": False, "error": "invalid"}, status_code=400)
+    for candidate in (_downloads_dir() / name, OUTPUT_DIR / name):
+        if candidate.exists():
+            _open_path(candidate, reveal=False)
+            return JSONResponse({"ok": True, "path": str(candidate)})
+    return JSONResponse({"ok": False, "error": "not_found"}, status_code=404)
 
 
 def _upload_ctx(

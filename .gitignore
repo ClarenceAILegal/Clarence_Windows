@@ -15,7 +15,11 @@ dist/
 build/
 output/*
 !output/.gitkeep
+# Per-machine settings (may contain API keys)
+data/settings.json
+data/settings.json.tmp
 # Keep fillable .docx templates tracked; ignore raw source archives
 templates/library/sources/*
 !templates/library/sources/.gitkeep
 !templates/library/README.md
+packaging/macos/Clarence.app/

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Motion ready · Clarence{% endblock %}
+{% block content %}
+<section class="wrap">
+  <div class="card generated-card">
+    <p class="generated-kicker">Document ready</p>
+    <h1 class="generated-title">Your motion was generated</h1>
+    {% if template_name %}
+    <p class="muted">From template: <strong>{{ template_name }}</strong></p>
+    {% endif %}
+
+    <div class="generated-file">
+      <span class="generated-file-icon" aria-hidden="true">DOCX</span>
+      <div>
+        <p class="generated-filename">{{ filename }}</p>
+        {% if downloads_name %}
+        <p class="muted">Saved to your <strong>Downloads</strong> folder{% if is_desktop %} and opened{% endif %}.</p>
+        {% else %}
+        <p class="muted">Saved in Clarence’s output folder.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="generated-actions">
+      <a class="btn primary" href="/download/{{ filename|urlencode }}">Download again</a>
+      {% if is_desktop %}
+      <button type="button" class="btn" id="btn-open-file" data-filename="{{ filename }}">Open document</button>
+      <button type="button" class="btn ghost" id="btn-reveal-file" data-filename="{{ filename }}">Show in folder</button>
+      {% endif %}
+      <a class="btn ghost" href="/home">New request</a>
+      <a class="btn ghost" href="/library">Library</a>
+    </div>
+
+    <p class="muted generated-hint">
+      Files also stay in <code>Motion-Bot/output/</code> on this Mac.
+    </p>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function () {
+  function post(url, filename) {
+    return fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ filename: filename }),
+    }).then(function (r) { return r.json(); });
+  }
+  var openBtn = document.getElementById("btn-open-file");
+  var revealBtn = document.getElementById("btn-reveal-file");
+  if (openBtn) {
+    openBtn.addEventListener("click", function () {
+      post("/api/open-file", openBtn.getAttribute("data-filename"));
+    });
+  }
+  if (revealBtn) {
+    revealBtn.addEventListener("click", function () {
+      post("/api/reveal-file", revealBtn.getAttribute("data-filename"));
+    });
+  }
+})();
+</script>
+{% endblock %}
